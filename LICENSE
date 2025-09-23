@@ -1,24 +1,23 @@
-This is free and unencumbered software released into the public domain.
+承知いたしました。ご指定いただいたライセンス条項を、日本語と英語を併記する形で記述します。
+このまま LICENSE ファイルにコピー＆ペーストしてお使いいただけます。
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+#ライセンス / License
+著作権表示 / Copyright Notice Copyright (c) 2025 Moonlight Technologies Inc. All Rights Reserved.
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+#利用条件 / Terms of Use
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+本リポジトリ内で提供されるすべての文書、図表、画像、およびその他のコンテンツ（以下、総称して「本コンテンツ」）に関する一切の権利は、著作権者であるMoonlight Technologies Inc.およびMasahiro Aokiに留保されます。
 
-For more information, please refer to <https://unlicense.org>
+All rights to the documents, diagrams, images, and other content provided in this repository (hereinafter collectively referred to as "the Content") are reserved by the copyright holders, Moonlight Technologies Inc. and Masahiro Aoki.
+
+利用者は、本コンテンツをGitHubのプラットフォーム上で閲覧する限定的な権利のみを許諾されます。
+
+Users are granted a limited right only to view the Content on the GitHub platform.
+
+著作権法で認められる私的利用の範囲を超えて、著作権者の書面による事前の許諾を得ることなく、本コンテンツの複製、改変、翻案、公衆送信、アップロード、掲示、配布、二次的著作物の作成、その他一切の利用を行うことを固く禁じます。
+
+Beyond the scope of private use permitted by copyright law, any reproduction, modification, adaptation, public transmission, uploading, posting, distribution, creation of derivative works, or any other use of the Content is strictly prohibited without the prior written permission of the copyright holder.
+
+本ライセンス条項に違反するいかなる利用も、著作権の侵害とみなし、法的措置の対象となる場合があります。
+
+Any use in violation of these license terms shall be deemed an infringement of copyright and may be subject to legal action.
