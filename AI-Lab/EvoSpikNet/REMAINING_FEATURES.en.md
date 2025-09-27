@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # Project Feature Implementation Status
 
 This document tracks the features and implementation status of the EvoSpikeNet project.

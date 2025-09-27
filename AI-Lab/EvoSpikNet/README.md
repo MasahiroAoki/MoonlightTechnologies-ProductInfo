@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # EvoSpikeNet - 分散型進化ニューロモーフィックフレームワーク
 
 ## 1. プロジェクト概要

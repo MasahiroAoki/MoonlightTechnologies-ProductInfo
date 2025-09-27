@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # EvoSpikeNet Dashboard ユーザーマニュアル
 
 ## 1. はじめに

@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # EvoSpikeNet - A Distributed, Evolutionary Neuromorphic Framework
 
 ## 1. Project Overview

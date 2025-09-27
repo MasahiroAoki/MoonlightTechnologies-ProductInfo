@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # EvoSpikeNet: Key Concepts
 
 This document provides technical details on the more advanced and unique concepts that form the core of the EvoSpikeNet framework.

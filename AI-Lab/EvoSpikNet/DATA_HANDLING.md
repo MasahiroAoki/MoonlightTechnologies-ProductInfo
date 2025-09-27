@@ -1,3 +1,6 @@
+# Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
+# Auth Masahiro Aoki
+
 # EvoSpikeNet: データハンドリングガイド
 
 このドキュメントは、`EvoSpikeNet`フレームワークで使用するAIのデータ（スパイクデータ）の作成、出力、および検証方法について詳述します。

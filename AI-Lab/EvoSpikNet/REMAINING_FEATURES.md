@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # プロジェクト機能実装ステータス
 
 このドキュメントは、EvoSpikeNetプロジェクトの機能と実装ステータスを追跡します。

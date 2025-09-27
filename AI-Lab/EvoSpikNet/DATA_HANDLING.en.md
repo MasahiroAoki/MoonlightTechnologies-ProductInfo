@@ -1,3 +1,6 @@
+# Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
+# Auth Masahiro Aoki
+
 # EvoSpikeNet: Data Handling Guide
 
 This document details how to create, output, and validate AI data (spike data) used in the `EvoSpikeNet` framework.

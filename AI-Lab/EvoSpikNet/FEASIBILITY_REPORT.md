@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # EvoSpikeNetLM 3Bおよび7Bモデルの実現可能性に関する調査報告書
 
 ## 1. 結論

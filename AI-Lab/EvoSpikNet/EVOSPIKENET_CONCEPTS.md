@@ -1,7 +1,6 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
-
 # EvoSpikeNet: 主要な概念
 
 このドキュメントは、EvoSpikeNetフレームワークの中核をなす、より高度でユニークな概念について技術的な詳細を解説します。
