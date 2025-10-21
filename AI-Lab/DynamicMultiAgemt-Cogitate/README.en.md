@@ -1,6 +1,3 @@
-# Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
-# Auth Masahiro Aoki
-
 # Cogitate
 A Secure, Collaborative, Multi-Task, Multi-Agent AI System
 
@@ -12,6 +9,15 @@ A scalable AI system featuring orchestration by LangGraph, a FastAPI backend, a 
 The system introduces a user role system with two roles: administrator and operator. Administrators manage users and system settings, while operators use their personal API keys to run multi-agent conferences.
 
 # Key Implemented Features
+
+*   **Human-in-the-Loop Workflow:**
+    *   The agent collaboration process is guided by human supervision and direction.
+    *   **Stage 1 (Brainstorming):** All agents generate answers to the initial query.
+    *   **Stage 2 (Role Assignment & Instruction):** The user reviews each agent's response and assigns roles such as "Drafter," "Verifier," and "Judge." The user can also provide specific instructions (an Elaboration Query) for the next step.
+    *   **Stage 3 (Execution):** Agents execute their next tasks based on their assigned roles and the user's instructions.
+
+*   **Multi-language Support:**
+    *   The response language of the agents automatically follows the UI language (Japanese or English) selected in the frontend, allowing users to interact with the AI in their preferred language.
 
 *   **Dynamic LLM Provider Support:**
     *   Eliminated the hard-coded dependency on OpenAI and now supports multiple major providers, including Gemini, Grok, and Claude.
@@ -25,18 +31,13 @@ The system introduces a user role system with two roles: administrator and opera
 *   **UI/UX Improvements:**
     *   **Real-time Streaming:** Responses from LLMs are now streamed in real-time with a typewriter effect, significantly improving the perceived speed of the application.
     *   Agent settings and queries are saved in `localStorage`, preserving state even when the page is reloaded.
-    *   Fixed an issue where agent cards were displayed in a vertical line, changing it to a responsive grid layout that wraps horizontally.
+    *   Agent cards are now displayed in a responsive grid layout that wraps horizontally.
     *   Changed the query input field to a multi-line `<textarea>`.
-    *   Improved the logic of the "Start Conference" button to be more intuitive.
+    *   Removed copyright notices from individual file headers and added a global application footer.
 
 *   **Security:**
     *   The security feature for detecting prompt injection is now an optional feature that can be enabled by setting the `INSPECTOR_LLM_API_KEY` environment variable.
     *   The local `multiagent.db` database file is now excluded from version control by `.gitignore`.
-
-*   **Advanced Collaboration Workflow:**
-    *   Expanded the agent collaboration process into multiple stages.
-    *   **Stage 1 (Brainstorming):** All agents generate answers to the initial query.
-    *   **Stage 2 (Elaboration):** After reviewing the initial answers, the administrator assigns specialized roles such as "Research," "Counter-argument," and "Literature Search" to each agent and inputs a second query for elaboration. This enables a more structured discussion.
 
 *   **Bug Fixes:**
     *   Fixed a `TypeError` when serializing Pydantic models to JSON in the backend, ensuring correct WebSocket communication.

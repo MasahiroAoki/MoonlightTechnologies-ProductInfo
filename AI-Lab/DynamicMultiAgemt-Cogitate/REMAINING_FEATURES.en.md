@@ -1,6 +1,3 @@
-# Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
-# Auth Masahiro Aoki
-
 # Project Feature Implementation Status
 
 This document tracks the implementation status of features defined in the technical specification (MT2025-AI-04-001).
@@ -16,7 +13,7 @@ This document tracks the implementation status of features defined in the techni
 | **2. Collaboration & QA** | HITL Interrupt Cycle | ✔️ | `backend/app/tests/test_graph.py` | ✅ Success |
 | | Real-time UI | ✔️ | (N/A) | ✅ Success |
 | | LLM-as-a-Judge Subsystem | ✔️ | `backend/app/tests/test_graph.py` | ✅ Success |
-| | **Advanced Collaboration Workflow** | ✔️ | (N/A) | (N/A) |
+| | **Role-Based Collaboration Workflow** | ✔️ | (N/A) | ✅ Success |
 | | Per-Agent Ollama Model Selection | ✔️ | (N/A) | (N/A) |
 | **3. Security** | Prompt Injection Countermeasures | ✔️ | `backend/app/tests/test_security.py` | ✅ Success |
 | | PII Filtering Control | ✔️ | `backend/app/tests/test_security.py` | ✅ Success |

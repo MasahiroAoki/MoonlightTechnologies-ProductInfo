@@ -1,41 +1,74 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
+
 # EvoSpikeNet: Key Concepts
 
 This document provides technical details on the more advanced and unique concepts that form the core of the EvoSpikeNet framework.
 
 ---
 
-## 1. Control System (`evospikenet/control.py`)
+## 1. Core SNN Architecture (`evospikenet/core.py`)
+
+The `evospikenet.core` module defines the fundamental components for the stateful SNN model at the heart of EvoSpikeNet. Initially designed to process single data streams, it has been fully extended to support **batch processing** for efficient training.
+
+- **`SNNModel`**: A high-level container that bundles multiple neuron layers and synapses to run time-step-based simulations. It automatically detects the input data's dimensionality, transparently handling both single instances (2D tensors) and batched data (3D tensors).
+- **`LIFNeuronLayer`**: Implements a layer of Leaky Integrate-and-Fire (LIF) neurons. Its internal state, the membrane potential (`potential`), is dynamically allocated according to the batch size, enabling parallel processing of multiple inputs.
+- **`SynapseMatrixCSR`**: Represents synaptic connections efficiently using sparse CSR-formatted matrices. The `forward` method in this class has also been enhanced to handle both single and batched inputs.
+
+This support for batch processing is a critical foundation for applying modern deep learning techniques, such as self-supervised learning, to SNNs.
+
+---
+
+## 2. Self-Supervised Learning (SSL) (`evospikenet/ssl.py`)
+
+The `evospikenet.ssl` module implements self-supervised learning mechanisms to learn feature representations from unlabeled data. This allows for pre-training SNNs on large amounts of data, improving performance and data efficiency for downstream tasks.
+
+### 2.1. ContrastiveSelfSupervisedLayer
+
+Inspired by research like SimCLR, the `ContrastiveSelfSupervisedLayer` is the core module for applying contrastive learning to SNNs.
+
+#### Principle of Operation
+1.  **Data Augmentation and Pair Generation**: Different augmented views generated from the same data sample are "positive pairs," while other samples in the batch are "negative pairs."
+2.  **Feature Extraction and Projection**: The SNN model generates feature embeddings from spike trains, which are then passed through a "projection head."
+3.  **Learning with NT-Xent Loss**: The NT-Xent loss function is used to maximize the similarity between positive pairs and minimize it between negative pairs. The loss is backpropagated using surrogate gradients.
+
+This process enables the model to learn high-level feature representations from input data without requiring any labels.
+
+---
+
+## 3. Advanced Control Systems (`evospikenet/control.py`)
 
 The `evospikenet.control` module provides mechanisms to control the learning and behavior of the SNN from an external, meta-level.
 
-### 1.1. MetaSTDP (Plasticity Control via Meta-Learning)
+### 3.1. MetaSTDP (Plasticity Control via Meta-Learning)
 
-The `MetaSTDP` class functions as a kind of meta-learning agent that dynamically adjusts learning-related parameters of all neurons based on the overall performance of the model (given as a reward signal).
+The `MetaSTDP` class functions as a meta-learning agent that dynamically adjusts the learning-related parameters (e.g., membrane potential decay rate) of all neurons based on a global reward signal.
 
-#### Principle of Operation
-1.  **Target Parameter:** In the current implementation, the target for adjustment is the **membrane potential decay rate (`beta`)** of all `snn.Leaky` (LIF neuron) layers present in the model. `beta` is a crucial parameter that determines the length of a neuron's "memory" (a value closer to 1 means a longer memory).
-2.  **Reward-Based Updates:**
-    -   At each training step, a reward calculated from the loss or other metrics is passed to the `update` method.
-    -   `MetaSTDP` internally maintains a baseline of the reward (a moving average of its expected value).
-    -   If the current reward exceeds the baseline (meaning the loss is smaller than expected), it updates `beta` in the direction of `1` (lengthening the memory).
-    -   Conversely, if the reward is below the baseline, it updates `beta` to be smaller (shortening the memory).
-3.  **Learning Rate Annealing:**
-    -   `MetaSTDP` has its own learning rate (`eta`). This `eta` determines how much `beta` changes.
-    -   To stabilize learning, this `eta` is slightly decayed (annealed) each time the `update` method is called. This allows `beta` to fluctuate significantly in the early stages of learning and then converge to a stable state as the fluctuations become smaller over time.
+### 3.2. AEG (Activity-driven Energy Gating)
 
-This mechanism allows the model to self-adjust the fundamental properties of its neurons while observing its own overall performance.
+The `AEG` class is a mechanism that dynamically manages energy according to the activity of neuron groups, gating spikes when energy is low and replenishing it based on external rewards.
 
-### 1.2. AEG (Activity-driven Energy Gating)
+---
 
-The `AEG` class is a mechanism that dynamically manages energy according to the activity of neuron groups.
+## 4. Quantum-Inspired Self-Organization (`evospikenet/annealing.py`)
 
-#### Principle of Operation
-1.  **Concept of Energy:** Each neuron (or group of neurons) maintains an internal "energy" level. This energy varies from `255` (maximum) to `0`.
-2.  **Consumption by Firing:** When a neuron fires (spikes), its energy decreases based on the `consumption_rate`. This consumption is weighted by the "importance" of each spike. This makes firing for less important information more energy-costly and thus more likely to be suppressed.
-3.  **Firing Suppression by Energy (Gating):** If a neuron's energy falls below a certain `threshold`, it is temporarily unable to fire. Even if its membrane potential exceeds the firing threshold, no spike is output (it is gated).
-4.  **Energy Supply by Reward:** When a reward signal is given from an external source via the `supply` method, the energy levels of all neurons are restored based on the `supply_rate`.
+The `GraphAnnealingRule` class, found in `evospikenet/annealing.py`, is a quantum-inspired algorithm designed to optimize a graph's structure using simulated annealing. It maps the graph to an Ising model and seeks a low-energy configuration, revealing hierarchical structures and community patterns.
 
-This system allows the network to use the resource of energy efficiently and is expected to self-adjust to focus on processing high-importance information. It is used in the `SpikingEvoSpikeNetLM` model to suppress unnecessary spikes and increase computational efficiency.
+---
+
+## 5. RAG System and Data Management (`evospikenet/rag_milvus.py`)
+
+The Retrieval-Augmented Generation (RAG) system integrates external knowledge into the language model by retrieving relevant documents from a Milvus vector database. The `rag_milvus.py` module manages all interactions with this database.
+
+### 5.1. CURD Operations
+The system provides a full suite of data management functions, exposed through the "Data CURD" tab in the UI:
+- **`get_all_data()`**: Retrieves and displays all documents from the Milvus collection.
+- **`add_document()`**: Adds a new text document, which is automatically converted to a vector embedding.
+- **`update_document()`**: Modifies the text and source of an existing document.
+- **`delete_document()`**: Removes a document from the collection by its ID.
+
+This allows for direct, real-time management of the knowledge base without interacting with intermediate files like JSON.
+
+### 5.2. LLM Integration
+The RAG module also integrates with various Large Language Models (LLMs) to generate responses based on the retrieved documents. The system now includes a fully functional client for the **Grok API**, in addition to other models like OpenAI and Huggeing Face.

@@ -1,7 +1,4 @@
-# Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
-# Auth Masahiro Aoki
-
-# ARGUS-System
+# ARGUS-System 概要設計書 (v2.0)
 
 ## 1. システム概要
 

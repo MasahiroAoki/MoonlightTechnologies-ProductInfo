@@ -1,6 +1,7 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
+
 # Project Feature Implementation Status
 
 This document tracks the features and implementation status of the EvoSpikeNet project.
@@ -8,7 +9,7 @@ This document tracks the features and implementation status of the EvoSpikeNet p
 ---
 **Notes:**
 - **Regarding Phase 8 (Distributed Grid):** An attempt was made to implement this feature using Python's `multiprocessing` library, but it faced an unresolvable deadlock issue (permanent process halt). This was potentially due to the current execution environment. To avoid leaving unstable code in the project, the implementation of this feature was abandoned to prioritize project stability. The related code has been deleted.
-- **Regarding GraphAnnealingRule:** `GraphAnnealingRule` (multi-scale self-organization), proposed as part of the quantum-inspired features in Phase 3, was found to cause a difficult-to-debug low-level crash during the conversion between PyTorch sparse tensors and the `networkx` library. To ensure the overall stability of the project, this feature has been temporarily removed.
+- **Regarding GraphAnnealingRule:** `GraphAnnealingRule`, part of the Phase 3 quantum-inspired features, has been stably re-implemented. Previous numerical stability issues, which caused low-level crashes, were resolved by standardizing on `float64` precision and implementing a robust test suite.
 - **Regarding Spiking Transformer:** The initial Phase 5 implemented a standard (float-based) Transformer block due to the complexity of a pure spike-based implementation. Later, based on a detailed design proposal from the user, a full-fledged hybrid spiking language model (`SpikingEvoSpikeNetLM`) was newly implemented as **Phase SNN-LM**, utilizing `snnTorch`.
 
 ---
@@ -27,7 +28,10 @@ This document tracks the features and implementation status of the EvoSpikeNet p
 | **Phase 3** | **Energy-Driven / Quantum-Inspired** | | | |
 | | Energy-Driven Computing (`EnergyManager`) | ✔️ | `tests/test_energy.py` | ✅ Success |
 | | Operation Verification Demo | ✔️ | `examples/run_energy_demo.py` | ✅ Success |
-| | Quantum-Inspired Features (2/3 implemented) | ✔️ | `tests/test_quantum_layers.py`, `tests/test_fitness.py` | ✅ Success |
+| | Quantum-Inspired Features | | | |
+| | - `EntangledSynchronyLayer` | ✔️ | `tests/test_quantum_layers.py` | ✅ Success |
+| | - `HardwareFitnessEvaluator` | ✔️ | `tests/test_fitness.py` | ✅ Success |
+| | - `GraphAnnealingRule` | ✔️ | `tests/test_annealing.py` | ✅ Success |
 | **Phase 4** | **Text Learning - Encoding Methods** | | | |
 | | Word Embedding Layer | ✔️ | `tests/test_text.py` | ✅ Success |
 | | Encoding Modules (`RateEncoder`, `LatencyEncoder`) | ✔️ | `tests/test_text.py` | ✅ Success |
@@ -47,18 +51,18 @@ This document tracks the features and implementation status of the EvoSpikeNet p
 | **Phase EX**| **LLM Data Distillation** | | | |
 | | Data Distillation Module (`DataDistiller`) | ✔️ | `evospikenet/distillation.py` | ✅ Success |
 | | Data Generation Demo | ✔️ | `examples/generate_distilled_dataset.py` | ✅ Success |
-| **Phase 9** | **Frontend - Basic UI and Visualization** | | | |
-| | Basic Dash App Skeleton | ✔️ | `frontend/app.py` | ✅ Success |
-| | SNN Execution and Result Visualization | ✔️ | `frontend/app.py` | ✅ Success |
-| **Phase 10**| **Frontend - Interactive Control** | | | |
-| | Parameter Input UI | ✔️ | `frontend/app.py` | ✅ Success |
-| | Dynamic Simulation Update Feature | ✔️ | `frontend/app.py` | ✅ Success |
-| **Phase 11**| **Frontend - Command Panel** | | | |
-| | Data Gen/Test Execution UI | ✔️ | `frontend/app.py` | ✅ Success |
-| | Backend Script Integration | ✔️ | `frontend/app.py` | ✅ Success |
-| **Phase 12**| **Frontend - Advanced Training UI** | | | |
-| | LM Training UI from External Data Sources | ✔️ | `frontend/app.py` | ✅ Success |
-| | Training Log Streaming Display | ✔️ | `frontend/app.py` | ✅ Success |
+| **Phases 9-12**| **Frontend UI** | | | |
+| | Refactoring to Multi-Page UI | ✔️ | `frontend/app.py`, `frontend/pages/` | ✅ Success |
+| | - Home Page (Displays Manual) | ✔️ | `frontend/pages/home.py` | ✅ Success |
+| | - SNN Data Creation Page | ✔️ | `frontend/pages/data_creation.py` | ✅ Success |
+| | - Model Visualization Page | ✔️ | `frontend/pages/visualization.py` | ✅ Success |
+| | - EvoSpikeNetLM Page | ✔️ | `frontend/pages/evospikenet_lm.py` | ✅ Success |
+| | - SpikingEvoSpikeNetLM Page | ✔️ | `frontend/pages/spiking_lm.py` | ✅ Success |
+| | - Multi-Modal LM Page | ✔️ | `frontend/pages/multi_modal_lm.py` | ✅ Success |
+| | - Text Classifier Page | ✔️ | `frontend/pages/text_classifier.py` | ✅ Success |
+| | - System Utilities Page | ✔️ | `frontend/pages/system_utils.py` | ✅ Success |
+| | - RAG System Page | ✔️ | `frontend/pages/rag.py` | ✅ Success |
+| |   - Milvus Data Management (CURD) | ✔️ | `frontend/pages/rag.py` | ✅ Success |
 | **Phase SNN-LM-DATA**| **SNN-LM - Data Pipeline** | | | |
 | | External Data Loaders (`Wikipedia`, `Aozora`) | ✔️ | `evospikenet/dataloaders.py` | ✅ Success |
 | | `TAS-Encoding` (Text to Spike Conversion) | ✔️ | `evospikenet/encoding.py`, `tests/test_encoding.py` | ✅ Success |
@@ -71,8 +75,8 @@ This document tracks the features and implementation status of the EvoSpikeNet p
 | | Training/Evaluation Script | ✔️ | `examples/train_spiking_evospikenet_lm.py` | ✅ Success |
 | | Hyperparameter Tuning Script | ✔️ | `scripts/run_hp_tuning.sh` | ✅ Success |
 | **Phase SNN-LM-VIZ**| **SNN-LM - Visualization** | | | |
-| | Internal Spike Activity Visualization | ✔️ | `frontend/app.py` | ✅ Success |
-| | Attention Weight Visualization | ✔️ | `frontend/app.py` | ✅ Success |
+| | Internal Spike Activity Visualization | ✔️ | `frontend/pages/spiking_lm.py` | ✅ Success |
+| | Attention Weight Visualization | ✔️ | `frontend/pages/spiking_lm.py` | ✅ Success |
 
 **Legend:**
 *   ✔️: Implemented

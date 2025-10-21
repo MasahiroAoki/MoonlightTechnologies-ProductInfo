@@ -1,6 +1,3 @@
-# Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
-# Auth Masahiro Aoki
-
 # プロジェクト機能実装ステータス
 
 このドキュメントは、技術仕様書（MT2025-AI-04-001）で定義された機能の実装ステータスを追跡します。
@@ -16,7 +13,7 @@
 | **2. 協調とQA** | HITL割り込みサイクル | ✔️ | `backend/app/tests/test_graph.py` | ✅ 成功 |
 | | リアルタイムUI (ストリーミング) | ✔️ | (N/A) | ✅ 成功 |
 | | LLM-as-a-Judgeサブシステム | ✔️ | `backend/app/tests/test_graph.py` | ✅ 成功 |
-| | **高度な協調ワークフロー** | ✔️ | (N/A) | (N/A) |
+| | **役割ベース協調ワークフロー** | ✔️ | (N/A) | ✅ 成功 |
 | | エージェント毎のOllamaモデル選択 | ✔️ | (N/A) | (N/A) |
 | **3. セキュリティ** | プロンプトインジェクション対策 | ✔️ | `backend/app/tests/test_security.py` | ✅ 成功 |
 | | PIIフィルタリング制御 | ✔️ | `backend/app/tests/test_security.py` | ✅ 成功 |

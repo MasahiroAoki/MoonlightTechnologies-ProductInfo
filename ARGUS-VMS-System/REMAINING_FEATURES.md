@@ -1,6 +1,3 @@
-# Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
-# Auth Masahiro Aoki
-
 # ARGUS-System 実装状況レビュー
 
 ARGUS-System概要設計書に基づき、現在のソースコードベースの機能実装状況を評価しました。

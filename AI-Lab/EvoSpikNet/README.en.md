@@ -1,6 +1,7 @@
 # Copyright 2025 Moonlight Technologies Inc.. All Rights Reserved.
 # Auth Masahiro Aoki
 
+
 # EvoSpikeNet - A Distributed, Evolutionary Neuromorphic Framework
 
 ## 1. Project Overview
@@ -21,137 +22,72 @@ Based on the phases defined in `REMAINING_FEATURES.md`, this framework implement
     - `InsightEngine`: Visualizes the network's internals, such as raster plots of firing activity and connection structure graphs.
 - **Energy-Driven Computing (Phase 3):**
     - `EnergyManager`: Manages neuron firing based on energy levels to achieve more biologically realistic simulations.
-- **Text Processing (Phase 4):**
-    - Conversion of text data into spike trains using `WordEmbeddingLayer`, `PositionalEncoding`, and `RateEncoder`.
+- **Multi-Modal Processing (Text & Image):**
+    - `WordEmbeddingLayer`, `PositionalEncoding`, `RateEncoder` for converting text data into spike trains.
+    - Implementation of a multi-modal language model (`MultiModalEvoSpikeNetLM`) utilizing `torchvision` for image processing.
 - **Quantum-Inspired Features (Phase 3):**
     - `EntangledSynchronyLayer`: A special layer that dynamically controls the synchronization of neuron groups based on context.
     - `HardwareFitnessEvaluator`: A fitness evaluation function for evolutionary algorithms that considers hardware performance metrics.
-- **Experimental Gradient-Based Learning (Phase 6):**
-    - `examples/run_gradient_training_demo.py`: A self-contained demo showing how to train an SNN using Surrogate Gradients without compromising core library stability.
+    - `GraphAnnealingRule`: A rule that uses simulated annealing to optimize graph structures and promote self-organization.
 - **LLM-based Data Distillation:**
-    - `evospikenet/distillation.py`: A feature to generate high-quality synthetic data for testing and training using Large Language Models (LLMs). It adopts a common interface design for flexible backend support.
+    - `evospikenet/distillation.py`: A feature to generate high-quality synthetic data for testing and training using Large Language Models (LLMs).
 - **Full-fledged SNN Language Model (`SpikingEvoSpikeNetLM`):**
     - A Transformer-based language model, built on `snnTorch`, that actually operates on spikes.
     - `TAS-Encoding`: An encoding layer that converts text into time-adaptive spike trains.
     - `ChronoSpikeAttention`: A hybrid attention mechanism that operates in the spike domain.
-    - `MetaSTDP` / `AEG`: Advanced learning and control mechanisms considering meta-learning and energy efficiency.
-    - **Training, Evaluation, and Tuning:** Provides a complete workflow from model training, perplexity evaluation, to hyperparameter tuning via scripts (`examples/train_spiking_evospikenet_lm.py`, `scripts/run_hp_tuning.sh`).
-    - **UI Visualization:** Allows visualization of internal spike activity and attention weights during text generation from the Web UI.
+- **Retrieval-Augmented Generation (RAG) Feature:**
+- **Self-Supervised Learning (SSL) Feature**:
+    - `evospikenet/ssl.py`: Implements a self-supervised learning layer with contrastive learning (NT-Xent loss) to enable representation learning from unlabeled data.
 
 ## 3. Web UI
-A web frontend is available for interactively performing simulations, adjusting parameters, and visualizing results from a browser. Advanced features such as **training, evaluating, and visualizing the internal operations of the SNN language model** can also be executed and checked from the UI. Launch it with the following script and access `http://localhost:8050` in your browser.
+A web frontend is available for interactively performing simulations, adjusting parameters, and visualizing results from a browser. The Docker scripts will launch the Milvus database alongside the UI.
 
+The new UI has been rebuilt as a multi-page application where each feature is on a separate page. You can access the dashboard at `http://localhost:8050` and navigate to all features from the navigation bar.
+
+You can launch it using the following commands:
 ```bash
-# Launch the Web UI in CPU mode
+# Launch the Web UI and Milvus in GPU mode
+./scripts/run_frontend_gpu.sh
+
+# Launch the Web UI and Milvus in CPU mode
 ./scripts/run_frontend_cpu.sh
 ```
 
 ## 4. Environment Setup and Execution using Docker (Recommended)
 
-This project allows for easy setup of CPU or GPU execution environments using Docker.
+This project allows for easy setup of CPU or GPU execution environments using Docker. The **Milvus vector database is also launched as a container**, providing a complete development and execution environment.
 
 ### Prerequisites
 - [Docker](https://www.docker.com/products/docker-desktop/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/) (v2 or later, `docker compose` command)
 - [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (if using GPU mode)
 
-### Build the Environment
+### Build and Run the Environment
 First, build the Docker image by running the following command in the project's root directory:
 ```bash
 docker compose build
 ```
+Then, use the scripts in the `scripts` directory to launch the desired services. For example, to run the Web UI in GPU mode, use the following command. This will start both the `frontend` service and its `milvus-standalone` dependency.
+```bash
+./scripts/run_frontend_gpu.sh
+```
+You can then access the dashboard at `http://localhost:8050`.
 
-### Selecting Execution Mode (CPU / GPU)
-The execution scripts in the `scripts` directory are divided into CPU mode (`*_cpu.sh`) and GPU mode (`*_gpu.sh`). Please select the appropriate script for your purpose.
+### Other Commands
+- **Development Environment (GPU):** `./scripts/run_dev_gpu.sh`
+- **Run Tests (CPU):** `./scripts/run_tests_cpu.sh`
 
----
+## 5. Local Development Environment Setup (Not Recommended)
 
-### Development Environment
-Launches a development container and connects to an interactive shell.
+Without Docker, you must manually start a Milvus database and install Python dependencies. To avoid issues from environment differences, **using Docker (Section 4) is strongly recommended.**
 
-- **GPU Mode:**
-  ```bash
-  ./scripts/run_dev_gpu.sh
-  ```
-- **CPU Mode:**
-  ```bash
-  ./scripts/run_dev_cpu.sh
-  ```
-To exit the container, run `exit`. The container will continue to run in the background. To stop it completely, run `docker stop evospikenet-dev-gpu` (or `...-cpu`).
-
----
-
-### Running Tests
-Runs the test suite using `pytest`.
-
-- **GPU Mode:**
-  ```bash
-  ./scripts/run_tests_gpu.sh
-  ```
-- **CPU Mode:**
-  ```bash
-  ./scripts/run_tests_cpu.sh
-  ```
-
----
-
-### Running the Sample Program
-Runs the sample program `example.py`.
-
-- **GPU Mode:**
-  ```bash
-  ./scripts/run_prod_gpu.sh
-  ```
-- **CPU Mode:**
-  ```bash
-  ./scripts/run_prod_cpu.sh
-  ```
----
-
-### Running the Web UI
-Launches the interactive Web UI.
-
-- **GPU Mode:**
-  ```bash
-  ./scripts/run_frontend_gpu.sh
-  ```
-- **CPU Mode:**
-  ```bash
-  ./scripts/run_frontend_cpu.sh
-  ```
-After launching, access `http://localhost:8050` in your browser.
-
-## 5. Local Development Environment Setup (Advanced)
-
-**Note:** This method assumes that the correct versions of Python and CUDA are installed on your local machine and that the paths are set correctly. For most users, **execution using Docker (Section 4) is recommended** to avoid issues due to environmental differences.
-
-This framework can run on either a CPU or a GPU (NVIDIA). For maximum performance, an **NVIDIA GPU and CUDA** setup is recommended.
-
-1.  **Clone the repository and navigate into it**
-2.  **Create and activate a Python virtual environment**
-3.  **Install dependencies:**
-    - **For GPU:** `PyTorch` must be installed corresponding to your CUDA version.
-      ```bash
-      # PyTorch for CUDA 12.1
-      pip install torch --index-url https://download.pytorch.org/whl/cu121
-      ```
-    - **For CPU:**
-      ```bash
-      pip install torch
-      ```
-    - **Common dependencies:**
-      ```bash
-      # Install the main package
-      pip install -e .
-      # Install dependencies for testing
-      pip install -e '.[test]'
-      ```
-4.  **Verify installation:**
+1.  **Start Milvus:** Launch Milvus separately using Docker or another method.
+2.  **Install dependencies:**
     ```bash
-    # Test on GPU
-    DEVICE=cuda pytest
-    # Test on CPU
-    DEVICE=cpu pytest
+    # Install PyTorch (adjust for your environment)
+    pip install torch
+    # Install the project
+    pip install -e .[test]
     ```
 
 ## 6. Basic Execution Steps
@@ -208,13 +144,26 @@ if __name__ == '__main__':
 | Path | Description |
 | :--- | :--- |
 | `evospikenet/` | Main source code for the framework. |
-| `frontend/` | Source code for the Dash-based Web UI application. |
+| `frontend/` | Source code for the Dash-based Web UI. `app.py` is the entry point, and the `pages/` directory contains each feature page. |
 | `tests/` | Unit tests using `pytest`. |
 | `scripts/` | Shell scripts for CPU/GPU to simplify development, testing, and execution. |
 | `examples/` | Sample programs demonstrating specific uses of the framework. |
+| `data/` | Sample datasets and knowledge bases for RAG (`knowledge_base.json`). |
 | `Dockerfile` | The blueprint for the Docker image that defines the project's execution environment. |
-| `docker-compose.yml` | Docker service definition for CPU mode. |
+| `docker-compose.yml` | Docker service definition for CPU mode, including the Milvus service. |
 | `docker-compose.gpu.yml`| Additional configuration file for GPU mode. |
 | `pyproject.toml` | Defines project metadata and Python dependencies. |
 | `REMAINING_FEATURES.md`| The project's feature implementation status and future roadmap. |
 | `README.md` | This file. Describes the project overview, setup instructions, usage, etc. |
+
+## 8. Roadmap
+
+EvoSpikeNet aims to achieve more advanced and energy-efficient neuromorphic computing through continuous research and development. See `FEATURE_ANALYSIS.md` for a detailed breakdown.
+
+## 9. Codebase Documentation
+
+As of October 2025, the entire codebase has been thoroughly reviewed and annotated. All Python source files (`.py`) now include:
+- A file header summarizing the module's functionality, copyright, and author information.
+- Detailed comments for each function and class, explaining their purpose, arguments, and behavior.
+
+This effort was undertaken to improve the readability, maintainability, and overall quality of the framework, making it more accessible for future development and collaboration.

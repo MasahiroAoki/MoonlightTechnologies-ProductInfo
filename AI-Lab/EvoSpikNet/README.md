@@ -3,160 +3,97 @@
 
 # EvoSpikeNet - 分散型進化ニューロモーフィックフレームワーク
 
+**最終更新日:** 2025年10月19日
+
 ## 1. プロジェクト概要
 
 EvoSpikeNetは、GPUの並列計算能力またはCPUを活用し、脳の可塑性を模倣した、スケーラブルでエネルギー効率の高い「動的スパイクニューラルネットワーク（SNN）」のシミュレーションフレームワークです。浮動小数点演算を排除し、整数演算とスパース計算に特化することで、リアルタイムの時系列データ処理やエッジAI応用を目指します。
 
 ## 2. 主な実装済み機能
 
-`REMAINING_FEATURES.md`で定義されているフェーズに基づき、本フレームワークは以下の主要な機能セットを実装しています。
+本フレームワークは、`REMAINING_FEATURES.md`で定義されたフェーズに基づき、以下の主要な機能セットを実装しています。
 
-- **コアSNNエンジン (フェーズ1):**
-    - `LIFNeuronLayer`: 整数演算ベースのLIFニューロン層。
-    - `SynapseMatrixCSR`: メモリ効率の高いスパースなシナプス接続。
+- **コアSNNエンジン (フェーズ1)**:
+    - `LIFNeuronLayer`: 整数演算に基づくLIFニューロン層。
+    - `SynapseMatrixCSR`: メモリ効率の良いスパースなシナプス結合。
     - `SNNModel`: 複数の層とシナプスを統合し、シミュレーションを実行するコアモデル。
-- **動的進化と可視化 (フェーズ2):**
+- **動的進化と可視化 (フェーズ2)**:
     - `STDP`: スパイクタイミング依存可塑性（STDP）によるオンライン学習。
-    - `DynamicGraphEvolutionEngine`: シナプスの生成・削除を行う動的グラフ進化。
-    - `InsightEngine`: 発火活動のラスタプロットや接続構造のグラフ化など、ネットワーク内部を可視化。
-- **エネルギー駆動型コンピューティング (フェーズ3):**
-    - `EnergyManager`: ニューロンの発火をエネルギーレベルに基づいて制限し、より生物学的に現実的なシミュレーションを実現。
-- **テキスト処理 (フェーズ4):**
-    - `WordEmbeddingLayer`, `PositionalEncoding`, `RateEncoder` によるテキストデータのスパイク列への変換。
-- **量子インスパイアード機能 (フェーズ3):**
-    - `EntangledSynchronyLayer`: 文脈に応じてニューロン群の同期を動的に制御する特殊レイヤー。
-    - `HardwareFitnessEvaluator`: ハードウェアの性能指標を考慮した進化的アルゴリズムの適応度評価関数。
-- **実験的な勾配ベース学習 (フェーズ6):**
-    - `examples/run_gradient_training_demo.py`: コアライブラリの安定性を損なうことなく、代理勾配（Surrogate Gradients）を用いてSNNを訓練する方法を示す自己完結型のデモ。
-- **LLMによるデータ蒸留:**
-    - `evospikenet/distillation.py`: 大規模言語モデル（LLM）を利用して、テストや訓練用の高品質な合成データを生成する機能。柔軟なバックエンドに対応する共通インターフェース設計を採用。
-- **本格的なSNN言語モデル (`SpikingEvoSpikeNetLM`):**
-    - `snnTorch`をベースとした、実際にスパイクで動作するTransformerベースの言語モデル。
+    - `DynamicGraphEvolutionEngine`: シナプスの生成と削除を行う動的グラフ進化。
+    - `InsightEngine`: 発火活動のラスタープロットや接続構造グラフなど、ネットワーク内部を可視化。
+- **エネルギー駆動型コンピューティング (フェーズ3)**:
+    - `EnergyManager`: エネルギーレベルに基づきニューロンの発火を管理し、より生物学的に現実的なシミュレーションを実現。
+- **マルチモーダル処理 (テキスト・画像)**:
+    - `WordEmbeddingLayer`, `PositionalEncoding`, `RateEncoder`によるテキストデータのスパイク列への変換。
+    - `torchvision`を利用した画像処理を行うマルチモーダル言語モデル（`MultiModalEvoSpikeNetLM`）の実装。
+- **量子インスパイアード機能 (フェーズ3)**:
+    - `EntangledSynchronyLayer`: コンテキストに基づきニューロン群の同期を動的に制御する特殊な層。
+    - `HardwareFitnessEvaluator`: ハードウェア性能指標を考慮した進化計算の適応度評価関数。
+    - `GraphAnnealingRule`: シミュレーテッドアニーリングを用いてグラフ構造を最適化し、自己組織化を促進するルール。
+- **LLMによるデータ蒸留**:
+    - `evospikenet/distillation.py`: 大規模言語モデル（LLM）を用いて、テストや訓練用の高品質な合成データを生成する機能。
+- **本格的なSNN言語モデル (`SpikingEvoSpikeNetLM`)**:
+    - `snnTorch`ベースの、実際にスパイクで動作するTransformerベースの言語モデル。
     - `TAS-Encoding`: テキストを時間適応型のスパイク列に変換するエンコーディング層。
     - `ChronoSpikeAttention`: スパイク領域で動作するハイブリッドなアテンション機構。
-    - `MetaSTDP` / `AEG`: メタ学習とエネルギー効率を考慮した高度な学習・制御機構。
-    - **訓練、評価、チューニング:** モデルの訓練、パープレキシティ評価、ハイパーパラメータ調整までの一連のワークフローをスクリプトで提供 (`examples/train_spiking_evospikenet_lm.py`, `scripts/run_hp_tuning.sh`)。
-    - **UIによる可視化:** Web UIから、テキスト生成時の内部スパイク活動とアテンションの重みを可視化可能。
+- **検索拡張生成 (RAG) 機能**:
+- **自己学習 (SSL) 機能**:
+    - `evospikenet/ssl.py`: 対照学習（NT-Xent損失）を用いた自己学習層を実装し、ラベルなしデータからの表現学習を可能に。
 
 ## 3. Web UI
-シミュレーションの実行、パラメータ調整、結果の可視化をブラウザからインタラクティブに行うためのWebフロントエンドが利用可能です。特に、**SNN言語モデルの訓練、評価、内部動作の可視化**といった高度な機能もUIから実行・確認できます。以下のスクリプトで起動し、ブラウザで `http://localhost:8050` にアクセスしてください。
+シミュレーションの実行、パラメータ調整、結果の可視化をブラウザからインタラクティブに行うためのWebフロントエンドが利用可能です。Dockerスクリプトは、UIと共にMilvusデータベースも起動します。
 
+新しいUIは、各機能が個別のページに分割されたマルチページアプリケーションとして再構築されました。`http://localhost:8050`にアクセスすると、ナビゲーションバーから全ての機能ページに移動できます。
+
+以下のコマンドで起動できます。
 ```bash
-# CPUモードでWeb UIを起動
+# GPUモードでWeb UIとMilvusを起動
+./scripts/run_frontend_gpu.sh
+
+# CPUモードでWeb UIとMilvusを起動
 ./scripts/run_frontend_cpu.sh
 ```
 
-## 4. Dockerを使用した環境構築・実行 (推奨)
+## 4. Dockerを使用した環境設定と実行 (推奨)
 
-本プロジェクトは、Dockerを使用して、CPUまたはGPUの実行環境を簡単に構築できます。
+本プロジェクトでは、Dockerを使用してCPUまたはGPUの実行環境を容易に構築できます。**Milvusベクターデータベースもコンテナとして起動**され、完全な開発・実行環境を提供します。
 
 ### 前提条件
 - [Docker](https://www.docker.com/products/docker-desktop/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
-- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (GPUモードを使用する場合)
+- [Docker Compose](https://docs.docker.com/compose/install/) (v2以降, `docker compose` コマンド)
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) (GPUモード利用時)
 
-### 環境のビルド
-まず、プロジェクトのルートディレクトリで以下のコマンドを実行し、Dockerイメージをビルドします。
+### 環境のビルдと実行
+まず、プロジェクトのルートディレクトリで以下のコマンドを実行してDockerイメージをビルドします。
 ```bash
 docker compose build
 ```
+次に、`scripts`ディレクトリ内のスクリプトを使用して目的のサービスを起動します。例えば、GPUモードでWeb UIを実行するには、以下のコマンドを使用します。これにより、`frontend`サービスとその依存関係である`milvus-standalone`の両方が起動します。
+```bash
+./scripts/run_frontend_gpu.sh
+```
+その後、`http://localhost:8050` にアクセスしてダッシュボードを利用できます。
 
-### 実行モードの選択 (CPU / GPU)
-`scripts` ディレクトリ内の実行スクリプトは、CPUモード用 (`*_cpu.sh`) とGPUモード用 (`*_gpu.sh`) に分かれています。目的に応じて適切なスクリプトを選択してください。
+### その他のコマンド
+- **開発環境 (GPU):** `./scripts/run_dev_gpu.sh`
+- **テスト実行 (CPU):** `./scripts/run_tests_cpu.sh`
 
----
+## 5. ローカルでの開発環境設定 (非推奨)
 
-### 開発環境
-開発用のコンテナを起動し、インタラクティブなシェルに接続します。
+Dockerを使用しない場合、手動でMilvusデータベースを起動し、Pythonの依存関係をインストールする必要があります。環境差異による問題を避けるため、**Dockerの使用（セクション4）を強く推奨します。**
 
-- **GPUモード:**
-  ```bash
-  ./scripts/run_dev_gpu.sh
-  ```
-- **CPUモード:**
-  ```bash
-  ./scripts/run_dev_cpu.sh
-  ```
-コンテナから出るには `exit` を実行してください。コンテナはバックグラウンドで実行され続けます。完全に停止するには `docker stop evospikenet-dev-gpu` (または `...-cpu`) を実行してください。
-
----
-
-### テストの実行
-`pytest`によるテストスイートを実行します。
-
-- **GPUモード:**
-  ```bash
-  ./scripts/run_tests_gpu.sh
-  ```
-- **CPUモード:**
-  ```bash
-  ./scripts/run_tests_cpu.sh
-  ```
-
----
-
-### サンプルプログラムの実行
-`example.py`のサンプルプログラムを実行します。
-
-- **GPUモード:**
-  ```bash
-  ./scripts/run_prod_gpu.sh
-  ```
-- **CPUモード:**
-  ```bash
-  ./scripts/run_prod_cpu.sh
-  ```
----
-
-### Web UIの実行
-インタラクティブな操作が可能なWeb UIを起動します。
-
-- **GPUモード:**
-  ```bash
-  ./scripts/run_frontend_gpu.sh
-  ```
-- **CPUモード:**
-  ```bash
-  ./scripts/run_frontend_cpu.sh
-  ```
-起動後、ブラウザで `http://localhost:8050` にアクセスしてください。
-
-## 5. ローカルでの開発環境設定 (上級者向け)
-
-**注意:** この方法は、ローカルマシンに適切なバージョンのPythonとCUDAがインストールされており、パスが正しく設定されていることを前提とします。多くのユーザーにとっては、環境の差異による問題を回避できる**Dockerを使用した実行（セクション4）が推奨されます。**
-
-本フレームワークは、CPUまたはGPU（NVIDIA製）で実行可能です。性能を最大限に引き出すためには、**NVIDIA GPUとCUDA** のセットアップが推奨されます。
-
-1.  **リポジトリのクローンと移動**
-2.  **Python仮想環境の作成と有効化**
-3.  **依存ライブラリのインストール:**
-    - **GPUの場合:** `PyTorch`はCUDAのバージョンに合ったものをインストールする必要があります。
-      ```bash
-      # PyTorch for CUDA 12.1
-      pip install torch --index-url https://download.pytorch.org/whl/cu121
-      ```
-    - **CPUの場合:**
-      ```bash
-      pip install torch
-      ```
-    - **共通の依存ライブラリ:**
-      ```bash
-      # 本体をインストール
-      pip install -e .
-      # テスト用の依存関係をインストール
-      pip install -e '.[test]'
-      ```
-4.  **インストールの確認:**
+1.  **Milvusの起動:** Dockerまたは他の方法でMilvusを別途起動します。
+2.  **依存関係のインストール:**
     ```bash
-    # GPUでテスト
-    DEVICE=cuda pytest
-    # CPUでテスト
-    DEVICE=cpu pytest
+    # PyTorchのインストール（環境に合わせて調整）
+    pip install torch
+    # プロジェクトのインストール
+    pip install -e .[test]
     ```
 
 ## 6. 基本的な実行手順
 
-以下は、`EvoSpikeNet`を使用して簡単な2層のSNNモデルを構築し、実行するサンプルコードです。
+`EvoSpikeNet`を使用して、簡単な2層SNNモデルを構築・実行するサンプルコードです。
 
 ```python
 import torch
@@ -167,11 +104,11 @@ def run_simple_snn():
     """
     EvoSpikeNetの基本的な使い方を示すサンプル関数。
     """
-    # 環境変数からデバイスを選択。なければデフォルトでCUDAかCPUを選択
+    # 環境変数からデバイスを選択、またはCUDA/CPUにデフォルト設定
     device = os.getenv('DEVICE', 'cuda' if torch.cuda.is_available() else 'cpu')
-    print(f"Running on device: {device}")
+    print(f"実行デバイス: {device}")
 
-    # 1. モデルのコンポーネントを定義
+    # 1. モデルコンポーネントの定義
     layers = [
         LIFNeuronLayer(num_neurons=784, device=device),
         LIFNeuronLayer(num_neurons=10, device=device)
@@ -180,24 +117,24 @@ def run_simple_snn():
         SynapseMatrixCSR(pre_size=784, post_size=10, connectivity_ratio=0.05, device=device)
     ]
 
-    # 2. SNNモデルを構築
+    # 2. SNNモデルの構築
     model = SNNModel(layers=layers, synapses=synapses)
-    print("SNNModel created successfully.")
+    print("SNNModelが正常に作成されました。")
 
-    # 3. ダミーの入力データを生成
+    # 3. ダミー入力データの生成
     time_steps = 20
     input_size = 784
     input_spikes = torch.randint(0, 2, (time_steps, input_size), dtype=torch.int8, device=device)
-    print(f"\nCreated random input spikes with shape: {input_spikes.shape}")
+    print(f"\nランダムな入力スパイクを生成しました。形状: {input_spikes.shape}")
 
-    # 4. シミュレーションを実行
-    print("Running simulation...")
+    # 4. シミュレーションの実行
+    print("シミュレーションを実行中...")
     output_spikes = model.forward(input_spikes)
-    print("Simulation finished.")
+    print("シミュレーションが完了しました。")
 
-    # 5. 結果を確認
-    print(f"Output spikes shape: {output_spikes.shape}")
-    print(f"Total spikes in output: {torch.sum(output_spikes)}")
+    # 5. 結果の確認
+    print(f"出力スパイクの形状: {output_spikes.shape}")
+    print(f"出力の合計スパイク数: {torch.sum(output_spikes)}")
 
 if __name__ == '__main__':
     run_simple_snn()
@@ -208,13 +145,19 @@ if __name__ == '__main__':
 | パス | 説明 |
 | :--- | :--- |
 | `evospikenet/` | フレームワークの主要なソースコード。 |
-| `frontend/` | DashベースのWeb UIアプリケーションのソースコード。 |
+| `frontend/` | DashベースのWeb UIアプリケーションのソースコード。`app.py`がエントリーポイントで、`pages/`ディレクトリに各機能ページが格納されています。 |
 | `tests/` | `pytest`を使用したユニットテスト。 |
-| `scripts/` | 開発、テスト、実行を簡略化するためのCPU/GPU別シェルスクリプト群。 |
-| `examples/` | フレームワークの具体的な使用方法を示すサンプルプログラム。 |
+| `scripts/` | CPU/GPU用の開発、テスト、実行を簡略化するシェルスクリプト群。 |
+| `examples/` | フレームワークの特定用途を示すサンプルプログラム。 |
+| `data/` | サンプルデータセットとRAG用の知識ベース (`knowledge_base.json`)。 |
 | `Dockerfile` | プロジェクトの実行環境を定義するDockerイメージの設計図。 |
-| `docker-compose.yml` | CPUモード用のDockerサービス定義。 |
+| `docker-compose.yml` | Milvusサービスを含むCPUモード用のDockerサービス定義。 |
 | `docker-compose.gpu.yml`| GPUモード用の追加設定ファイル。 |
 | `pyproject.toml` | プロジェクトのメタデータとPythonの依存関係を定義する。 |
-| `REMAINING_FEATURES.md`| プロジェクトの機能実装状況と今後のロードマップ。 |
-| `README.md` | このファイル。プロジェクトの概要、セットアップ手順、使い方などを記述。 |
+| `REMAINING_FEATURES.md`| プロジェクトの機能実装状況と将来のロードマップ。 |
+| `README.md` | このファイル。プロジェクトの概要、設定手順、使用方法などを記述。 |
+
+## 8. ロードマップ
+
+EvoSpikeNetは、継続的な研究開発を通じて、より高度でエネルギー効率の高いニューロモーフィックコンピューティングの実現を目指します。
+現状の開発承認済みの機能は`REMAINING_FEATURES.md`を参照してください。未承認の開発検討項目の詳細は`FEATURE_ANALYSIS.md`を参照してください。
