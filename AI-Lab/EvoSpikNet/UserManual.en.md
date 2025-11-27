@@ -4,13 +4,15 @@
 
 # EvoSpikeNet Dashboard User Manual
 
+**Last Updated:** November 26, 2025
+
 ## 1. Introduction
 
-This document explains how to use each feature of the `EvoSpikeNet Dashboard` and the technical implementation behind them. This dashboard is a tool for interactively running and visualizing the various functions of the EvoSpikeNet framework from a browser.
+This document explains how to use the features of the `EvoSpikeNet Dashboard`. This dashboard is a unified interface for interactively operating and visualizing the complex capabilities of the EvoSpikeNet framework from a browser.
 
 ## 2. Setup and Launch
 
-This project fully utilizes Docker Compose to launch the application and its required services (the Milvus database) simultaneously.
+This project fully utilizes Docker Compose to launch the application and all its necessary backend services (API, databases, Milvus, etc.) at once.
 
 ### 2.1. Prerequisites
 - Docker
@@ -18,67 +20,105 @@ This project fully utilizes Docker Compose to launch the application and its req
 - (For GPU use) NVIDIA Container Toolkit
 
 ### 2.2. How to Launch
-First, build the Docker image by running the following command in the project's root directory:
+First, build the Docker images by running the following command in the project's root directory (on first run or after updates). You may need `sudo`.
 ```bash
 docker compose build
 ```
-Then, launch the web UI and its related services using the following scripts:
+Then, launch the web UI and all related services using the following scripts:
 
 ```bash
-# To run in GPU mode:
-./scripts/run_frontend_gpu.sh
+# For environments with a GPU
+sudo ./scripts/run_frontend_gpu.sh
 
-# To run in CPU mode:
-./scripts/run_frontend_cpu.sh
+# For CPU-only environments
+sudo ./scripts/run_frontend_cpu.sh
 ```
-Access the dashboard at `http://localhost:8050`.
-
-## 3. Main Interface
-
-The dashboard has been refactored into a multi-page application with a single access point. You can access each page via the navigation bar at the top of the screen.
-
-- **Home:** The default page, which displays this user manual.
-- **SNN Data Creation:** Generates sample spike data for the 4-layer SNN model.
-- **Model & Spike Visualization:** Visualizes SNN firing activity (raster plots) and model structures (graphs).
-- **EvoSpikeNetLM:** Handles training and inference (prompting) for the standard language model.
-- **SpikingEvoSpikeNetLM:** Handles training, inference, and visualization of internal states (spikes, attention) for the spike-based language model.
-- **RAG System:** Manages and interacts with the Retrieval-Augmented Generation system. This page features two main tabs:
-    - **Query:** Perform query-based retrieval and generation.
-    - **Data CURD:** A comprehensive interface for managing the knowledge base in Milvus. You can **C**reate (add), **U**pdate (edit), **R**ead (view), and **D**elete documents directly from a data table.
-- **Multi-Modal LM:** Trains and runs inference for the multi-modal model that handles both images and text.
-- **Text Classifier:** Trains and runs inference for the text classification model.
-- **System Utilities:** Executes system-level commands, such as running the test suite or performing data distillation.
+After launching, you can access the dashboard at `http://localhost:8050`.
 
 ---
 
-## 4. Detailed Feature Explanations
+## 3. UI Navigation and Page Functions
 
-### 4.1. Standard SNN Simulation
-- **Purpose:** Simulates the behavior of a core SNN model composed of basic LIF neurons and sparse synaptic connections.
-- **Output:** A raster plot showing the firing activity of the output layer neurons.
+The dashboard is organized into a hierarchical structure based on the navigation menu at the top of the screen.
 
-### 4.2. Entangled Synchrony Layer
-- **Purpose:** Verifies the behavior of a special layer inspired by quantum entanglement.
-- **Output:** A heatmap showing the generated synchronous spike pattern.
+### 3.1. Home
+This is the default page, which displays basic documentation such as this user manual and the project's README.
 
-### 4.3. Hardware Fitness Evaluator
-- **Purpose:** Demonstrates a fitness function that considers hardware metrics like power consumption.
-- **Output:** A single calculated fitness score.
+### 3.2. Data Generation
+This section contains pages for generating and managing the various types of data used for model training and analysis.
 
-### 4.4. Text Classification
-- **Purpose:** Classifies the sentiment of an input sentence in real-time using a pre-trained model.
-- **Output:** The predicted sentiment label and confidence score.
+- **SNN Models**:
+    - Run a simulation of a basic 4-layer SNN model and visualize/save its internal states (spike activity, membrane potential) as a `.pt` file. You can configure neuron types (LIF/Izhikevich) and other parameters directly from the UI.
+- **Knowledge Base**:
+    - Manage the knowledge base used by the RAG system. You can directly Create, Read, Update, and Delete documents in the table. Changes here are synchronized in real-time with both Milvus and Elasticsearch.
+- **Automated Learning/Optimization**:
+    - **Hyperparameter Tuning**: Run hyperparameter tuning studies using `Optuna`. Set the parameters and ranges you want to search, then start the tuning process.
+    - **Auto Learning**: Execute a continuous, automated learning cycle via the `run_auto_learning.py` script.
 
-### 4.5. LM Training (Advanced)
-- **Purpose:** Flexibly trains the `EvoSpikeNetLM` language model on various data sources like Wikipedia.
-- **Logical Implementation:** Asynchronously runs the training script via `subprocess.Popen` and polls the log file with `dcc.Interval` to display real-time progress.
+### 3.3. Prompt
+This section provides interfaces for interacting with pre-trained models.
 
+- **RAG Chat**:
+    - Interact with the RAG system in a chat format. You can select from multiple LLM backends (OpenAI, Hugging Face, SNN, etc.) from a dropdown. If you select the SNN backend, you can enable "Save Neuron Data" to save the neuron activity during inference.
+- **Spiking LM Chat**:
+    - Interact directly with a `SpikingEvoSpikeNetLM`. Select a trained model, enter a prompt, and generate text. This page also supports saving neuron activity.
+
+### 3.4. Data Analysis
+This section contains pages for visualizing and analyzing generated or saved data.
+
+- **Generic Visualization**:
+    - Upload neuron data files (`.pt`) generated by any of the framework's features (RAG Chat, Spiking LM Chat, SNN Models, etc.) to visualize their contents (spikes, membrane potentials, attention, etc.). This allows you to analyze the internal states of different models in a unified interface.
+- **Tuning Results**:
+    - Select a hyperparameter tuning study result (`.db` file) from the "Automated Learning" page and analyze it through interactive graphs, such as optimization history and parameter importances.
+
+### 3.5. System Settings
+This section provides system-wide management and utility functions.
+
+- **System Utilities**:
+    - Execute system-level commands, such as running the test suite, generating synthetic data (data distillation), or evaluating model performance.
+- **Model Management**:
+    - View a list of all trained models saved in the `saved_models` directory and delete any that are no longer needed.
 
 ---
 
-## 5. Detailed Page Functions
+## 4. Detailed Feature Guide: Distributed Brain
 
-The features on each page are a reorganization of the tabs and functions from the previous UI. For example, the "System Utilities" page contains the command execution features (like running tests and data distillation) that were formerly in the "System & Data" tab. For specific operations on each page, please follow the on-screen instructions.
+The "Distributed Brain" page, found under the "Prompt" menu, is the framework's most advanced feature. It allows you to manage and run a distributed brain simulation composed of multiple processes (nodes) via the `run_distributed_brain_simulation.py` script.
 
----
-(Remaining sections omitted as they are similar to README.md)
+### 4.1. Node Configuration Tab
+
+**Purpose**: To define the simulation's configuration and to start/stop each `torch.distributed` process.
+
+**Step-by-Step Guide**:
+1.  **Configure Remote Hosts (for Multi-PC operation)**:
+    - If you plan to run the simulation across multiple machines, add the necessary SSH connection details (IP address, username, path to SSH key) to the "Remote Host Configuration" table and click "Save Hosts".
+    - **Technical Note**: The `docker-compose.yml` configuration mounts the host machine's `~/.ssh` directory into the container, so you can use the host machine's path for the SSH key (e.g., `~/.ssh/id_rsa`).
+
+2.  **Configure the Simulation**:
+    - **Select Simulation Type**: Choose a pre-defined brain architecture, such as `Language Focus` or `Image Focus`. The list of required nodes will appear in the table below.
+    -   **Select Model for Node**: For each node (especially primary modules like language or vision), you can select a trained model from the database. If you select a multimodal model like `MultiModalEvoSpikeNetLM`, that node will be capable of processing multiple data types (e.g., a vision node can process both an image and a text prompt).
+
+3.  **Assign Nodes to Hosts**:
+    - In the "Node Status & Host Assignment" table, use the "Host" dropdown for each node (process) to assign it to a machine (`localhost` or a configured remote host). Rank 0 (the PFC), which acts as the master process, is typically run on `localhost`.
+
+4.  **Start and Stop the Simulation**:
+    - **Start Nodes**: Click this button to launch each node as an instance of `run_distributed_brain_simulation.py` on its assigned host (remote hosts are launched via SSH). The "Status" column in the table will change to "Starting...".
+    - **Stop Nodes**: Safely terminates all running simulation processes. In the backend, this creates a file flag (`/tmp/stop_evospikenet_simulation.flag`) that each process detects to perform a clean shutdown.
+
+### 4.2. Brain Simulation Tab
+
+**Purpose**: To interact with the running simulation and monitor its internal state in real-time.
+
+**How to Use**:
+1.  **Submit a Prompt**:
+    - Enter a query in the text area and, optionally, upload image or audio files.
+    -   **Multimodal Input**: If you have configured a node with a multimodal model, the inputs here will be interpreted together. For instance, if you set a `MultiModalEvoSpikeNetLM` on a vision node and provide both an image and a text prompt, both will be sent to and processed by the vision node.
+    - Click the "Execute Query" button to send the prompt to the `/api/distributed_brain/prompt` API endpoint, where it will be polled by the running master process (Rank 0, PFC).
+
+2.  **Monitor Status and Check Results**:
+    - **Query Status & Live Simulation Graph**: These UI components periodically poll the `/api/distributed_brain/status` endpoint. The master process (PFC) POSTs the current state of the simulation (node statuses, active communication edges, etc.) to this endpoint, allowing the UI to update in real-time.
+    - **PFC Charts**: These time-series graphs display the PFC's internal state (energy, entropy, and spike activity).
+    - **Query Response**: When the simulation is complete, the PFC POSTs the final response to the `/api/distributed_brain/result` endpoint, and it appears in this area.
+
+3.  **Check Logs**:
+    - Select a node (e.g., `Node 4 - Lang-Main`) from the dropdown in the "Node Logs" section to view the contents of its log file (`/tmp/sim_rank_{rank}.log`). This feature **also works for remote hosts**, fetching the log file from the remote machine via an API call.
