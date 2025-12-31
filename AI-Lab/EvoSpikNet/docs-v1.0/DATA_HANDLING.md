@@ -1,12 +1,58 @@
+<!-- Reviewed against source: 2025-12-21. English translation pending. -->
 # Copyright 2025 Moonlight Technologies Inc. All Rights Reserved.
 # Auth Masahiro Aoki
 
 
 # EvoSpikeNet: データ取扱ガイド
 
-**最終更新日:** 2025年12月10日
+**最終更新日:** 2025年12月15日
+
+## このドキュメントの目的と使い方
+- 目的: 各種データ（スパイク/テキスト/RAG/マルチモーダル）の作成・フォーマット・検証手順を一望できるようにする。
+- 対象読者: データパイプライン担当、研究/学習オペレーション担当。
+- まず読む順: データアップロード → スパイクデータ → テキストコーパス → 知識ベース → マルチモーダルデータセット。
+- 関連リンク: 分散脳スクリプトは `examples/run_zenoh_distributed_brain.py`、PFC/Zenoh/Executive詳細は [docs/implementation/PFC_ZENOH_EXECUTIVE.md](docs/implementation/PFC_ZENOH_EXECUTIVE.md)。
+
+- 実装ノート（アーティファクト）: トレーニングジョブが生成する `artifact_manifest.json` とアップロード時のルールについては `docs/implementation/ARTIFACT_MANIFESTS.md` を参照してください。
 
 このドキュメントでは、スパイクデータ、テキストコーパス、RAG知識ベース、マルチモーダルデータセットなど、`EvoSpikeNet`フレームワークで使用される様々なAIデータの作成、フォーマット、検証方法について詳述します。
+
+---
+
+## 0. データアップロード機能
+
+EvoSpikeNetは、トレーニングデータをAPIサーバーにアップロードし、分散環境での共有を可能にする機能を提供します。これにより、ローカルファイルだけでなく、アップロードされたデータセットを使用してLLMトレーニングを実行できます。
+
+### アップロード可能なデータ形式
+
+- **マルチモーダルデータ**: 画像とキャプションのペア（`captions.csv` + `images/`ディレクトリ）
+- **将来拡張予定**: 音声データ、テキストコーパスなどのサポート
+
+### アップロード手順
+
+1. **データ準備**: ローカルにトレーニングデータを作成
+2. **スクリプト実行**: `--upload-data`フラグを使用してトレーニングを開始
+3. **APIアップロード**: データが自動的にZIP圧縮され、APIサーバーにアップロード
+4. **共有利用**: アップロードされたデータは他のユーザーやシステムで再利用可能
+
+### 使用例
+
+```bash
+# データアップロード付きトレーニング
+python examples/train_multi_modal_lm.py \
+  --mode train \
+  --dataset custom \
+  --data-dir your_data_dir \
+  --run-name your_run \
+  --upload-data \
+  --data-name your_dataset_name \
+  --epochs 10 \
+  --batch-size 4
+```
+
+### APIサーバーが利用できない場合
+
+APIサーバーが利用できない場合は、自動的にローカルデータでのトレーニングにフォールバックします。データアップロードはスキップされ、ローカルファイルを使用してトレーニングが継続されます。
 
 ---
 

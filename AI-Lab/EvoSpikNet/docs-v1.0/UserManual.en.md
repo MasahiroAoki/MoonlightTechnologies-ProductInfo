@@ -1,3 +1,21 @@
+<!-- AUTO-TRANSLATED from docs/UserManual.md on 2025-12-21. Please review. -->
+# EvoSpikeNet Dashboard User Manual
+
+Last updated: 2025-12-09
+
+Purpose: Quick reference describing the dashboard pages and their functions for operators, testers, and new contributors.
+
+Navigation (high level): Home, Language & MultiModal Models, RAG & Knowledge, Advanced Systems, Tools & Analysis, Model Management, System Utilities, Tuning.
+
+Highlights:
+- Home: access project docs and README
+- Language & MultiModal Models: pages for `SpikingEvoTextLM`, multimodal LM, vision/audio encoders, and text classifier
+- RAG & Knowledge: hybrid retrieval (Milvus + Elasticsearch) and RAG chat UI with query-processing debug view
+- Distributed Brain: configure and run Zenoh-based distributed simulations; node configuration and runtime monitoring
+- Motor Cortex: robot learning pipeline with imitation learning, RL (SpikePPO), zero-shot generalization, live control and monitoring
+- Tools & Analysis: visualization, model management (categorization, upload, filterable table), system utilities, and Optuna tuning integration
+
+See the detailed manual pages for full workflow and advanced features.
 # Copyright 2025 Moonlight Technologies Inc. All Rights Reserved.
 # Auth Masahiro Aoki
 
@@ -5,6 +23,12 @@
 # EvoSpikeNet Dashboard User Manual
 
 **Last Updated:** December 9, 2025
+
+## Purpose and How to Use This Document
+- Purpose: Give dashboard users a quick view of page roles and operations.
+- Audience: Dashboard users, ops/validation members, new joiners.
+- Read order: UI navigation and page functions → Detailed features as needed.
+- Related links: Distributed brain implementation details implementation/PFC_ZENOH_EXECUTIVE.md; distributed brain script examples/run_zenoh_distributed_brain.py.
 
 ## 1. Introduction
 
@@ -62,6 +86,13 @@ This is the default page displaying basic documents such as this user manual and
 
 - **RAG System**:
     - Performs RAG (Retrieval-Augmented Generation) chat using hybrid search (Milvus + Elasticsearch). Knowledge base management is also done here.
+    - **Query Processing Debug Feature** ⭐ NEW: When the "Show Query Processing Details" checkbox is enabled, the following information is displayed:
+        - Query analysis (language detection, extracted keywords)
+        - Vector search results (L2 distance scores, document previews)
+        - Keyword search results (BM25 scores, document previews)
+        - RRF fusion process (ranking, score calculation)
+        - Generation details (context length, prompt preview, response type)
+    - **Knowledge Base Management**: Add, edit, delete documents; real-time character counter; batch delete functionality
 - **Data Creation**:
     - Generates and transforms data used for simulation and training.
 
@@ -76,8 +107,15 @@ This is the default page displaying basic documents such as this user manual and
 
 - **Visualization**:
     - Uploads saved neuron data (`.pt` files) and visualizes spike activity and attention maps in detail.
-- **Model Management**:
+- **Model Management** ⭐ UPDATED:
     - Manages model artifacts (list, download, upload) stored in the database.
+    - **Model Classification System** (Added December 17, 2025):
+        - **Brain Node Type**: Vision (Rank 1), Motor (Rank 2), Auditory (Rank 5), Speech (Rank 6), Executive (Rank 0), General
+        - **Model Category**: 20+ types corresponding to each node (image classification, object detection, motion control, speech recognition, text generation, etc.)
+        - **Model Variant**: Lightweight, Standard, High Accuracy, Realtime, Experimental
+    - **Classification on Upload**: When uploading models, you can select node type, category, and variant in addition to LLM type. Categories are dynamically filtered based on the selected node type.
+    - **Table Display**: Classification information is displayed in the model list table and can be filtered.
+    - **Recommended Models by Node Type**: Display recommended models and use cases for each node type.
 - **System Utilities**:
     - Utility functions for checking system status, clearing cache, running tests, etc.
 - **Tuning**:
@@ -89,7 +127,8 @@ This is the default page displaying basic documents such as this user manual and
 
 ### 4.1. Distributed Brain
 
-The "Distributed Brain" page in the navigation menu is the most advanced feature of the framework. It manages and executes a distributed brain simulation composed of multiple processes (nodes) via the `run_distributed_brain_simulation.py` script.
+The "Distributed Brain" page in the navigation menu is the most advanced feature of the framework. It manages and executes a distributed brain simulation composed of multiple processes (nodes) via the official Zenoh script `examples/run_zenoh_distributed_brain.py` (`run_distributed_brain_simulation.py` is a deprecated wrapper kept for backward compatibility).
+For implementation details of PFC/Zenoh/ExecutiveControl, see [implementation/PFC_ZENOH_EXECUTIVE.md](implementation/PFC_ZENOH_EXECUTIVE.md).
 
 - **Node Configuration Tab**: Defines the simulation architecture. Assigns different functional modules (e.g., "Language", "Vision") to run on different machines (local or remote via SSH) and assigns specific trained models to each node.
 - **Brain Simulation Tab**: Interacts with the running simulation. Sends multi-modal prompts (text, image, audio) and monitors internal states of the entire distributed system in real-time, including communication paths, PFC energy levels, and individual node logs.

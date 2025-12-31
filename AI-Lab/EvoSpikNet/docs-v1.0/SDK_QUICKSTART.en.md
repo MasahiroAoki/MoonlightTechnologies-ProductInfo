@@ -3,7 +3,14 @@
 
 # EvoSpikeNet SDK Quickstart Guide
 
+**Last Updated:** December 15, 2025
 **Get started with the EvoSpikeNet SDK in 30 seconds.**
+
+## Purpose and How to Use This Document
+- Purpose: Provide the fastest path to set up the SDK and run the API client.
+- Audience: Developers starting SDK usage.
+- Read order: Installation → API server start → Minimal example.
+- Related links: Distributed brain script examples/run_zenoh_distributed_brain.py (for runtime context); PFC/Zenoh/Executive details implementation/PFC_ZENOH_EXECUTIVE.md.
 
 ## Installation
 
@@ -128,6 +135,43 @@ client.download_artifact(
 )
 ```
 
+### 7️⃣ Dataset Upload
+
+```python
+import zipfile
+import os
+
+# Prepare training data directory
+data_dir = "./training_data"
+os.makedirs(f"{data_dir}/images", exist_ok=True)
+
+# Compress dataset to ZIP
+zip_buffer = io.BytesIO()
+with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+    # Add CSV file
+    zf.write(f"{data_dir}/captions.csv", arcname='captions.csv')
+    # Add image files
+    for root, _, files in os.walk(f"{data_dir}/images"):
+        for file in files:
+            full_path = os.path.join(root, file)
+            archive_name = os.path.join('images', os.path.relpath(full_path, f"{data_dir}/images"))
+            zf.write(full_path, arcname=archive_name)
+
+zip_buffer.seek(0)
+zip_buffer.name = "training_dataset.zip"
+
+# Upload dataset
+dataset_artifact = client.upload_artifact(
+    session_id=session_id,
+    artifact_type="dataset",
+    name="vision_training_data",
+    file=zip_buffer,
+    llm_type="SpikingEvoMultiModalLM"
+)
+
+print(f"Dataset upload completed: {dataset_artifact['artifact_id']}")
+```
+
 ---
 
 ## Checking Server Information
@@ -158,7 +202,7 @@ print(f"Number of active nodes: {len(status.get('nodes', []))}")
 ## Next Steps
 
 - 📖 Read the [Full SDK Documentation](./EvoSpikeNet_SDK.en.md)
-- 📁 Check the [Sample Code](./examples/sdk/)
+- 📁 Check the [Sample Code](./docs/sdk/)
 - 🔧 Refer to [Troubleshooting](./EvoSpikeNet_SDK.en.md#11-troubleshooting)
 - 💬 Ask questions on GitHub Issues
 
@@ -195,6 +239,101 @@ client.create_log_session()        # Create session
 client.upload_artifact()           # Upload
 client.download_artifact()         # Download
 client.list_artifacts()            # List
+```
+
+## 6️⃣ Running LLM Training Jobs (New Feature)
+
+### Vision Encoder Training
+
+```python
+from evospikenet.sdk import EvoSpikeNetAPIClient
+
+client = EvoSpikeNetAPIClient()
+
+# Submit Vision Encoder training job
+job_data = {
+    "category": "Vision",
+    "model_name": "google/vit-base-patch16-224",
+    "dataset_path": "data/llm_training/Vision/vision_data.jsonl",
+    "output_dir": "saved_models/Vision/vision-training-run",
+    "gpu": True,
+    "epochs": 3,
+    "batch_size": 8,
+    "learning_rate": 0.00001
+}
+
+response = client.submit_training_job(job_data)
+print(f"Training job started: {response['job_id']}")
+
+# Check job status
+status = client.get_training_status(response['job_id'])
+print(f"Job status: {status['status']}")
+```
+
+### Audio Encoder Training
+
+```python
+# Submit Audio Encoder training job
+job_data = {
+    "category": "Audio",
+    "model_name": "openai/whisper-base",
+    "dataset_path": "data/llm_training/Audio/audio_data.jsonl",
+    "output_dir": "saved_models/Audio/audio-training-run",
+    "gpu": True,
+    "epochs": 3,
+    "batch_size": 8,
+    "learning_rate": 0.00001
+}
+
+response = client.submit_training_job(job_data)
+print(f"Audio training job started: {response['job_id']}")
+```
+
+### Monitoring Training Jobs
+
+```python
+# List all training jobs
+jobs = client.list_training_jobs()
+for job in jobs:
+    print(f"Job ID: {job['job_id']}, Status: {job['status']}, Category: {job['category']}")
+
+# Get details of a specific job
+job_details = client.get_training_job_details("vision_training_job_001")
+print(f"Job details: {job_details}")
+```
+
+### Distributed Brain Node Training
+
+```python
+# Training configurations for different node types
+node_configs = {
+    "Vision": {
+        "model_name": "google/vit-base-patch16-224",
+        "node_types": ["Vision-Primary", "Vision-Secondary"]
+    },
+    "Audio": {
+        "model_name": "openai/whisper-base",
+        "node_types": ["Audio-Primary", "Audio-Secondary"]
+    },
+    "LangText": {
+        "model_name": "microsoft/DialoGPT-medium",
+        "node_types": ["Lang-Primary", "Lang-Secondary"]
+    }
+}
+
+# Submit training job for Vision nodes
+vision_job = {
+    "category": "Vision",
+    "model_name": node_configs["Vision"]["model_name"],
+    "dataset_path": "data/llm_training/Vision/vision_data.jsonl",
+    "output_dir": "saved_models/Vision/distributed-vision-run",
+    "gpu": True,
+    "epochs": 5,
+    "batch_size": 16,
+    "learning_rate": 0.00002
+}
+
+client.submit_training_job(vision_job)
 ```
 
 Happy coding! 🚀

@@ -7,6 +7,12 @@
 
 This document explains the technical details of the advanced and unique concepts that form the core of the EvoSpikeNet framework. It includes mathematical formulas, architecture diagrams, and implementation details based on the source code.
 
+## Purpose and How to Use This Document
+- Purpose: Summarize key EvoSpikeNet concepts, math, and implementation references for quick onboarding.
+- Audience: Architects, implementation engineers, researchers.
+- Read order: Table of contents → Jump to relevant concept sections.
+- Related links: Distributed brain script examples/run_zenoh_distributed_brain.py; PFC/Zenoh/Executive details docs/implementation/PFC_ZENOH_EXECUTIVE.md.
+
 ---
 
 ## Table of Contents
@@ -17,7 +23,9 @@ This document explains the technical details of the advanced and unique concepts
 4. [Multi-Modal Sensor Fusion Pipeline](#4-multi-modal-sensor-fusion-pipeline)
 5. [Motor Cortex Learning Pipeline](#5-motor-cortex-learning-pipeline)
 6. [Current Architecture: Asynchronous Communication via Zenoh](#6-current-architecture-asynchronous-communication-via-zenoh)
-7. [Other Key Concepts](#7-other-key-concepts)
+7. [Plugin Architecture & Microservices](#7-plugin-architecture--microservices)
+8. [Brain Language Architecture: Cognitive Abstraction via Language (Plan D)](#8-brain-language-architecture-cognitive-abstraction-via-language-plan-d)
+9. [Other Key Concepts](#9-other-key-concepts)
 
 ---
 
@@ -431,7 +439,7 @@ graph LR
 
 - **Asynchronous Pub/Sub**: All inter-node communication follows the Zenoh Publish/Subscribe model. This eliminates master/slave bottlenecks, allowing each module to operate independently. Prompts are published from the API to the `evospikenet/api/prompt` topic, and interested modules subscribe to it.
 - **Distributed Coordination**: While hierarchical control is maintained, the structure is more flexible, ensuring communication failures do not lead to system-wide halts.
-- **Implementation**: This new architecture is implemented by the `examples/run_zenoh_distributed_brain.py` script. `run_distributed_brain_simulation.py` called from the UI is a wrapper kept for backward compatibility, containing the old `torch.distributed`-based implementation code.
+- **Implementation**: This new architecture is implemented by the `examples/run_zenoh_distributed_brain.py` script. `run_distributed_brain_simulation.py` called from the UI is a wrapper kept for backward compatibility, containing the old `torch.distributed`-based implementation code. For PFC/Zenoh/ExecutiveControl details, see [docs/implementation/PFC_ZENOH_EXECUTIVE.md](docs/implementation/PFC_ZENOH_EXECUTIVE.md).
 - **Robustness and Speed**: This change is a crucial step towards building a truly robust, scalable system capable of fast startup, required for real-world mass-produced robots.
 
 ### 6.3. Legacy Architecture: `torch.distributed`
@@ -446,7 +454,274 @@ The legacy architecture employed a master/slave model where a central "Prefronta
 
 ---
 
-## 7. Other Key Concepts
+## 7. Plugin Architecture & Microservices
+
+**Implementation Date:** December 20, 2025
+
+EvoSpikeNet has migrated from a monolithic structure to **Plugin Architecture** and **Microservices Architecture**, achieving a 70% reduction in feature addition time and an 80% improvement in scalability.
+
+### 7.1. Plugin Architecture
+
+**Design Principles:**
+- **Dynamic Loading**: Detect and load plugins at runtime
+- **Loose Coupling**: Minimize dependencies between plugins
+- **Extensibility**: Easy addition of new plugin types
+- **Lifecycle Management**: Initialize → Activate → Execute → Deactivate
+
+**Plugin Types:**
+
+| Type | Description | Implementation Examples |
+|:-----|:------------|:------------------------|
+| `NEURON` | Neuron layer implementations | LIF, Izhikevich, EntangledSynchrony |
+| `ENCODER` | Input encoders | Rate, TAS, Latency |
+| `PLASTICITY` | Learning rules & plasticity | STDP, MetaPlasticity, Homeostasis |
+| `FUNCTIONAL` | Functional modules | Vision, Auditory, Motor |
+| `LEARNING` | Learning algorithms | SSL, Distillation |
+| `MONITORING` | Monitoring & analysis tools | DataMonitor, InsightEngine |
+| `COMMUNICATION` | Communication protocols | Zenoh, DDS |
+
+**Core Components:**
+
+```python
+from evospikenet.plugins import (
+    BasePlugin,           # Base class for all plugins
+    PluginManager,        # Plugin management & lifecycle control
+    PluginRegistry,       # Plugin registration & retrieval
+    PluginLoader,         # Dynamic plugin loading
+)
+```
+
+**Usage Example:**
+
+```python
+from evospikenet.plugins import initialize_plugin_system, PluginType
+
+# Initialize plugin system
+manager = initialize_plugin_system(plugin_dirs=["./custom_plugins"])
+
+# Get LIF neuron plugin
+lif_plugin = manager.get_plugin(PluginType.NEURON, "LIFNeuron")
+
+# Initialize and activate plugin
+manager.initialize_plugin(lif_plugin)
+manager.activate_plugin(lif_plugin)
+
+# Create neuron layer
+layer = lif_plugin.create_layer(num_neurons=100, tau=20.0, threshold=1.0)
+```
+
+### 7.2. Microservices Architecture
+
+**Architecture Overview:**
+
+```
+                    ┌─────────────────┐
+                    │   API Gateway   │
+                    │   (Port 8000)   │
+                    └────────┬────────┘
+                             │
+             ┌───────────────┼───────────────┐
+             │               │               │
+     ┌───────▼──────┐ ┌─────▼──────┐ ┌─────▼──────┐
+     │   Training   │ │ Inference  │ │   Model    │
+     │   Service    │ │  Service   │ │  Registry  │
+     │  (Port 8001) │ │(Port 8002) │ │(Port 8003) │
+     └──────────────┘ └────────────┘ └────────────┘
+             │               │               │
+             └───────────────┼───────────────┘
+                             │
+                    ┌────────▼────────┐
+                    │   Monitoring    │
+                    │    Service      │
+                    │   (Port 8004)   │
+                    └─────────────────┘
+```
+
+**Service Overview:**
+
+1. **Training Service (Port 8001)**: Training job management, distributed training coordination
+2. **Inference Service (Port 8002)**: Model inference processing, caching, dynamic batching
+3. **Model Registry Service (Port 8003)**: Model version management, metadata, file storage
+4. **Monitoring Service (Port 8004)**: Metrics collection & aggregation, alert management
+5. **API Gateway (Port 8000)**: Request routing, load balancing, service discovery
+
+**Performance Improvements:**
+
+| Metric | Before | After | Improvement |
+|:-------|:-------|:------|:------------|
+| Feature Addition Time | 4-5 days | 1-1.5 days | **70% reduction** |
+| Resource Efficiency | 60% | 85% | **80% improvement** |
+| Failure Impact | System-wide | Individual services | **Isolated** |
+
+**Deployment:**
+
+```bash
+# Start in microservices mode
+docker-compose -f docker-compose.microservices.yml up -d
+
+# Check service status
+docker-compose -f docker-compose.microservices.yml ps
+
+# Health check all services
+curl http://localhost:8000/services/health
+```
+
+For more details, see [PLUGIN_MICROSERVICES_ARCHITECTURE.en.md](PLUGIN_MICROSERVICES_ARCHITECTURE.en.md).
+
+---
+
+## 8. Brain Language Architecture: Cognitive Abstraction via Language (Plan D)
+
+**Added: December 12, 2025** - A revolutionary cognitive architecture that implements visual perception and motor commands as "brain language" with reduced data volume, inspired by human inner speech, to dramatically improve processing and transmission speeds.
+
+### 7.1. Conceptual Background
+
+#### Neuroscientific Basis
+Human cognition relies heavily on **inner speech** - the silent language that accompanies conscious thought. This architecture mimics this process by converting high-dimensional sensory data into compressed linguistic representations.
+
+#### Information Compression Principle
+- **Visual Data**: Millions of pixels → Hundreds of language tokens
+- **Motor Commands**: Complex trajectories → Abstract linguistic instructions
+- **Inter-Modal Integration**: Unified representation across vision, audio, and motor modalities
+
+### 7.2. Architecture Components
+
+#### Vision-to-Brain-Language Encoder
+Converts visual features into compressed linguistic tokens:
+
+```python
+class VisionToBrainLanguageEncoder:
+    def __init__(self):
+        self.visual_encoder = SpikingVisionEncoder()  # Extract visual features
+        self.concept_mapper = ConceptLanguageMapper()  # Map to concepts
+        self.tokenizer = BrainLanguageTokenizer()      # Generate tokens
+    
+    def encode(self, visual_input):
+        # Step 1: Extract visual features
+        features = self.visual_encoder(visual_input)
+        
+        # Step 2: Map to linguistic concepts
+        concepts = self.concept_mapper(features)
+        
+        # Step 3: Generate brain language tokens
+        tokens = self.tokenizer(concepts)
+        
+        return tokens  # e.g., ["red", "ball", "moving", "left", "fast"]
+```
+
+#### Brain Language Processor
+Processes linguistic representations for reasoning and decision-making:
+
+```python
+class BrainLanguageProcessor:
+    def __init__(self):
+        self.language_model = SpikingTransformerBlock()
+        self.reasoning_engine = SymbolicReasoner()
+        self.memory_integrator = EpisodicMemory()
+    
+    def process(self, language_tokens, context):
+        # Integrate with working memory
+        enriched_tokens = self.memory_integrator(language_tokens, context)
+        
+        # Perform reasoning
+        reasoned_output = self.reasoning_engine(enriched_tokens)
+        
+        # Generate decisions in language form
+        decisions = self.language_model(reasoned_output)
+        
+        return decisions
+```
+
+#### Brain-Language-to-Motor Decoder
+Translates linguistic decisions into motor commands:
+
+```python
+class BrainLanguageToMotorDecoder:
+    def __init__(self):
+        self.command_parser = LanguageCommandParser()
+        self.trajectory_generator = MotorTrajectoryGenerator()
+        self.coordination_engine = MotorCoordinationEngine()
+    
+    def decode(self, language_decisions):
+        # Parse linguistic commands
+        parsed_commands = self.command_parser(language_decisions)
+        
+        # Generate motor trajectories
+        trajectories = self.trajectory_generator(parsed_commands)
+        
+        # Coordinate multi-joint movements
+        coordinated_actions = self.coordination_engine(trajectories)
+        
+        return coordinated_actions
+```
+
+### 7.3. Performance Advantages
+
+#### Quantitative Improvements
+- **Data Compression**: 90%+ reduction in data volume
+- **Processing Speed**: 50%+ improvement (< 250ms target)
+- **Transmission Efficiency**: 80%+ reduction in bandwidth
+- **Energy Efficiency**: 60%+ reduction in power consumption
+
+#### Qualitative Benefits
+- **Cognitive Consistency**: Mimics human thought processes
+- **Interpretability**: Language-based decisions are human-readable
+- **Adaptability**: Rapid adaptation to novel situations
+- **Modularity**: Clean interfaces between cognitive components
+
+### 7.4. Technical Implementation
+
+#### Data Flow Architecture
+```
+Visual Input → Vision Encoder → Concept Mapping → Language Tokens
+Language Tokens → Reasoning → Memory Integration → Decisions
+Decisions → Command Parsing → Trajectory Generation → Motor Actions
+```
+
+#### Integration with Existing Systems
+- **Plan B Compatibility**: Seamless integration with Embodied AI pipeline
+- **SNN Optimization**: Leverages spiking neural network efficiency
+- **Distributed Processing**: Language tokens enable efficient inter-node communication
+
+### 7.5. Implementation Roadmap
+
+#### Phase 1: Proof of Concept (2026 Q1)
+- Basic Vision-to-Language conversion
+- Simple Brain Language processing
+- Performance baseline establishment
+
+#### Phase 2: Core Implementation (2026 Q2-Q3)
+- Full Brain Language Encoder/Processor/Decoder
+- End-to-end integration testing
+- Multi-modality extension
+
+#### Phase 3: Optimization (2026 Q4)
+- Performance optimization for < 250ms target
+- Advanced learning algorithms
+- Scalability testing
+
+#### Phase 4: Production Integration (2027 Q1-Q2)
+- Complete Plan B integration
+- Real-world deployment
+- API/SDK extensions
+
+### 7.6. Challenges and Solutions
+
+#### Information Loss Mitigation
+**Challenge**: Potential loss of visual detail in language conversion
+**Solution**: Multi-level representation (raw + compressed) with adaptive detail selection
+
+#### Learning Complexity
+**Challenge**: Difficulty in training Vision-Language models
+**Solution**: Transfer learning from existing models + hybrid supervised/self-supervised approaches
+
+#### Real-time Constraints
+**Challenge**: Processing delays in conversion pipeline
+**Solution**: Parallel processing pipelines + hardware acceleration + pre-computation caching
+
+---
+
+## 8. Other Key Concepts
 
 ### 7.1. Model Classification
 

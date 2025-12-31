@@ -3,9 +3,52 @@
 
 # EvoSpikeNet: Data Handling Guide
 
-**Last Updated:** 2025-12-04
+**Last Updated:** 2025-12-15
 
 This document details how to create, format, and validate the various types of AI data used in the `EvoSpikeNet` framework, including spike data, text corpora, RAG knowledge bases, and multi-modal datasets.
+
+## Purpose and How to Use This Document
+- Purpose: Provide a quick view of creation/format/validation steps for spike/text/RAG/multimodal data.
+- Audience: Data pipeline owners, research/training operators.
+- Read order: Data upload → Spike data → Text corpus → Knowledge base → Multimodal datasets.
+- Related links: Distributed brain script examples/run_zenoh_distributed_brain.py; PFC/Zenoh/Executive details implementation/PFC_ZENOH_EXECUTIVE.md.
+
+---
+
+## 0. Data Upload Feature
+
+EvoSpikeNet provides functionality to upload training data to an API server, enabling sharing in distributed environments. This allows LLM training to be performed not only with local files but also with uploaded datasets.
+
+### Supported Data Formats
+
+- **Multi-modal data**: Image and caption pairs (`captions.csv` + `images/` directory)
+- **Future extensions**: Planned support for audio data, text corpora, etc.
+
+### Upload Procedure
+
+1. **Data Preparation**: Create training data locally
+2. **Script Execution**: Start training using the `--upload-data` flag
+3. **API Upload**: Data is automatically ZIP compressed and uploaded to the API server
+4. **Shared Usage**: Uploaded data can be reused by other users or systems
+
+### Usage Example
+
+```bash
+# Training with data upload
+python examples/train_multi_modal_lm.py \
+  --mode train \
+  --dataset custom \
+  --data-dir your_data_dir \
+  --run-name your_run \
+  --upload-data \
+  --data-name your_dataset_name \
+  --epochs 10 \
+  --batch-size 4
+```
+
+### When API Server is Unavailable
+
+If the API server is unavailable, training automatically falls back to using local data. Data upload is skipped and training continues with local files.
 
 ---
 

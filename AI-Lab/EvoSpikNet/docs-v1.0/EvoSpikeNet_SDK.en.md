@@ -5,6 +5,12 @@
 
 **最終更新日:** 2025年12月2日
 
+## Purpose and How to Use This Document
+- Purpose: Give developers a quick path to understand the SDK, set it up, and call the API with minimal steps.
+- Audience: Developers integrating the SDK or API clients.
+- Read order: Overview → Setup/Install → Quickstart/Sample code.
+- Related links: Distributed brain script `examples/run_zenoh_distributed_brain.py` (example runtime), PFC/Zenoh/Executive details [implementation/PFC_ZENOH_EXECUTIVE.md](implementation/PFC_ZENOH_EXECUTIVE.md).
+
 ## 1. 概要
 
 `EvoSpikeNet Python SDK`は、`EvoSpikeNet API`と対話するための高レベルなインターフェースを提供するクライアントライブラリです。このSDKを利用することで、開発者はHTTPリクエストの詳細を意識することなく、数行のPythonコードでEvoSpikeNetのテキスト生成、データロギング、分散脳シミュレーション機能を自身のアプリケーションに簡単に統合できます。
@@ -74,7 +80,66 @@ else:
 
 ---
 
-## 4. テキスト生成
+## 4. Node Types and Model Categories
+
+EvoSpikeNet supports various brain node types and model categories for distributed brain simulation.
+
+### 4.1. Node Types
+
+The following node types are supported:
+
+| Node Type | Description | Rank |
+|-----------|-------------|------|
+| `vision` | Vision node (occipital lobe V1-V5) | 1 |
+| `motor` | Motor node (motor cortex M1 + cerebellum + spinal cord) | 2 |
+| `auditory` | Auditory node (temporal lobe A1-A2) | 5 |
+| `speech` | Speech generation node (Broca's area + cerebellum) | 6 |
+| `executive` | Executive control node (prefrontal cortex dlPFC) | 0 |
+| `general` | General-purpose node | N/A |
+
+### 4.2. Model Categories
+
+Each node type supports specific model categories:
+
+#### Vision Node Categories
+- `image_classification`: Image classification
+- `object_detection`: Object detection
+- `semantic_segmentation`: Semantic segmentation
+- `image_generation`: Image generation
+- `visual_qa`: Visual question answering
+
+#### Motor Node Categories
+- `motion_control`: Motion control
+- `trajectory_planning`: Trajectory planning
+- `inverse_kinematics`: Inverse kinematics
+- `motor_adaptation`: Motor adaptation
+
+#### Auditory Node Categories
+- `speech_recognition`: Speech recognition
+- `audio_classification`: Audio classification
+- `sound_event_detection`: Sound event detection
+- `speaker_recognition`: Speaker recognition
+
+#### Speech Node Categories
+- `text_to_speech`: Text-to-speech synthesis
+- `voice_conversion`: Voice conversion
+- `speech_synthesis`: Speech synthesis
+
+#### Executive Node Categories
+- `text_generation`: Text generation
+- `decision_making`: Decision making
+- `planning`: Planning
+- `reasoning`: Reasoning
+- `rag`: Retrieval-Augmented Generation (RAG)
+
+#### General Categories
+- `multimodal`: Multimodal processing
+- `embedding`: Embedding generation
+- `tokenization`: Tokenization
+
+---
+
+## 5. Text Generation
 
 ### 4.1. 基本的なテキスト生成
 
@@ -252,6 +317,8 @@ print(f"✅ セッションID: {session_id}")
 
 #### `upload_artifact(session_id: str, artifact_type: str, name: str, file: io.BytesIO) -> Dict`
 モデル、データセット、設定ファイルなどのデータアーティファクトを、指定したセッションに関連付けてアップロードします。
+
+Note: The `upload_artifact` API expects a file-like object (e.g. `io.BytesIO`) and reads `file.name` for the filename. Provide a `BytesIO` with `name` set rather than a plain path string.
 
 **パラメータ:**
 - `session_id` (str): アーティファクトを関連付けるセッションのID
@@ -550,6 +617,25 @@ def monitor_simulation():
             label = node.get('label', 'N/A')
             node_status = node.get('status', 'N/A')
             print(f"  → {label}: {node_status}")
+    
+    ## 9. Examples (Python scripts)
+
+    You can find runnable example scripts under the `examples/` directory. These demonstrate common SDK usage patterns and match the `EvoSpikeNetAPIClient` in `evospikenet/sdk.py`:
+
+    - `examples/sdk_quickstart.py` — Basic quickstart: generate, create session, upload `BytesIO` artifact, submit prompt, poll for result.
+    - `examples/sdk_zenoh.py` — Zenoh: connect, publish, fetch Zenoh stats.
+    - `examples/sdk_snapshot.py` — Snapshot: create, list, validate snapshots.
+    - `examples/sdk_scalability.py` — Scalability: run a short scalability test and fetch results/resources.
+
+    Run any example with:
+
+    ```bash
+    pip install -e .
+    python examples/sdk_quickstart.py
+    python examples/sdk_zenoh.py
+    python examples/sdk_snapshot.py
+    python examples/sdk_scalability.py
+    ```
         
         # 完了チェック
         if 'completed' in prompt_status.lower() or 'idle' in prompt_status.lower():
@@ -800,6 +886,180 @@ if __name__ == "__main__":
 1. ファイルサイズが大きすぎないか確認
 2. セッションIDが有効か確認
 3. APIサーバーのディスク容量を確認
+```
+
+---
+
+## 11.5. LLM Training Job Management (New Feature)
+
+The EvoSpikeNet SDK includes comprehensive LLM training job management capabilities designed for distributed brain systems. This allows training modality-specific models like Vision/Audio Encoders through the API.
+
+### 11.5.1. Submitting Training Jobs
+
+#### `submit_training_job(job_config: Dict) -> Dict`
+Submits a new training job to the API server.
+
+**Parameters:**
+- `job_config`: Dictionary containing training configuration
+  - `category`: Model category ("LangText", "Vision", "Audio", "MultiModal")
+  - `model_name`: Model name to use
+  - `dataset_path`: Path to training data
+  - `output_dir`: Output directory
+  - `gpu`: GPU usage flag
+  - `epochs`: Number of epochs
+  - `batch_size`: Batch size
+  - `learning_rate`: Learning rate
+
+**Example:**
+```python
+# Vision Encoder training
+vision_job = {
+    "category": "Vision",
+    "model_name": "google/vit-base-patch16-224",
+    "dataset_path": "data/llm_training/Vision/vision_data.jsonl",
+    "output_dir": "saved_models/Vision/vision-run-001",
+    "gpu": True,
+    "epochs": 3,
+    "batch_size": 8,
+    "learning_rate": 0.00001
+}
+
+response = client.submit_training_job(vision_job)
+print(f"Job ID: {response['job_id']}")
+```
+
+### 11.5.2. Checking Job Status
+
+#### `get_training_status(job_id: str) -> Dict`
+Gets the current status of a specified training job.
+
+**Example:**
+```python
+status = client.get_training_status("vision_training_job_001")
+print(f"Status: {status['status']}")  # running, completed, failed
+print(f"Progress: {status.get('progress', 0)}%")
+```
+
+#### `list_training_jobs(status_filter: str = None) -> List[Dict]`
+Gets a list of all training jobs.
+
+**Example:**
+```python
+# Get all jobs
+all_jobs = client.list_training_jobs()
+
+# Get only running jobs
+running_jobs = client.list_training_jobs(status_filter="running")
+
+for job in running_jobs:
+    print(f"{job['job_id']}: {job['category']} - {job['status']}")
+```
+
+### 11.5.3. Getting Job Details
+
+#### `get_training_job_details(job_id: str) -> Dict`
+Gets detailed information about a training job.
+
+**Example:**
+```python
+details = client.get_training_job_details("vision_training_job_001")
+print(f"Model: {details['model_name']}")
+print(f"Dataset: {details['dataset_path']}")
+print(f"Start time: {details['start_time']}")
+print(f"Logs: {details.get('logs', [])}")
+```
+
+### 11.5.4. Distributed Brain Node Training
+
+The SDK supports training configurations optimized for distributed brain system node architectures.
+
+**Example:**
+```python
+# Training configurations for different node types
+node_training_configs = {
+    "Vision": {
+        "model_name": "google/vit-base-patch16-224",
+        "node_types": ["Vision-Primary", "Vision-Secondary"],
+        "dataset_path": "data/llm_training/Vision/vision_data.jsonl"
+    },
+    "Audio": {
+        "model_name": "openai/whisper-base",
+        "node_types": ["Audio-Primary", "Audio-Secondary"], 
+        "dataset_path": "data/llm_training/Audio/audio_data.jsonl"
+    },
+    "LangText": {
+        "model_name": "microsoft/DialoGPT-medium",
+        "node_types": ["Lang-Primary", "Lang-Secondary"],
+        "dataset_path": "data/llm_training/LangText/langtext_data.jsonl"
+    }
+}
+
+# Training job for Vision nodes
+vision_config = node_training_configs["Vision"]
+job_config = {
+    "category": "Vision",
+    "model_name": vision_config["model_name"],
+    "dataset_path": vision_config["dataset_path"],
+    "output_dir": f"saved_models/Vision/distributed-{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+    "gpu": True,
+    "epochs": 5,
+    "batch_size": 16,
+    "learning_rate": 0.00002
+}
+
+response = client.submit_training_job(job_config)
+print(f"Started distributed Vision training: {response['job_id']}")
+```
+
+### 11.5.5. Training Monitoring and Automation
+
+#### Periodic Status Monitoring
+```python
+import time
+
+def monitor_training_job(job_id: str, check_interval: int = 30):
+    """Monitor a training job until completion"""
+    while True:
+        status = client.get_training_status(job_id)
+        print(f"Job {job_id}: {status['status']}")
+        
+        if status['status'] in ['completed', 'failed']:
+            return status
+        
+        time.sleep(check_interval)
+
+# Usage example
+final_status = monitor_training_job("vision_training_job_001")
+if final_status['status'] == 'completed':
+    print("Training completed successfully")
+else:
+    print(f"Training failed: {final_status.get('error', 'Unknown error')}")
+```
+
+#### Batch Job Management
+```python
+def submit_multiple_training_jobs(job_configs: List[Dict]) -> List[str]:
+    """Submit multiple training jobs in batch"""
+    job_ids = []
+    for config in job_configs:
+        try:
+            response = client.submit_training_job(config)
+            job_ids.append(response['job_id'])
+            print(f"Job submitted successfully: {response['job_id']} ({config['category']})")
+        except Exception as e:
+            print(f"Job submission failed: {config['category']} - {e}")
+    
+    return job_ids
+
+# Usage example
+configs = [
+    {"category": "Vision", "model_name": "google/vit-base-patch16-224", ...},
+    {"category": "Audio", "model_name": "openai/whisper-base", ...},
+    {"category": "LangText", "model_name": "microsoft/DialoGPT-medium", ...}
+]
+
+job_ids = submit_multiple_training_jobs(configs)
+print(f"Submitted {len(job_ids)} jobs")
 ```
 
 ---
